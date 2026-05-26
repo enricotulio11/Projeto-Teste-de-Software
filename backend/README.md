@@ -1,7 +1,23 @@
-﻿# Backend - API Express
 # MedAgenda — Arquitetura Backend (NestJS)
 
 Stack: **NestJS + TypeORM + SQLite + JWT**
+
+---
+
+## Ordem de Implementação dos Módulos
+
+| # | Módulo | Motivo |
+|---|--------|--------|
+| 1 | **Entidades** | Base de tudo; todos os módulos dependem delas |
+| 2 | **Logs** | Injetado internamente pelos outros módulos |
+| 3 | **Configurações** | Usado por Autenticação (registros habilitados) e Dependentes (limite) |
+| 4 | **Autenticação** | Login, registro e JWT; obrigatório para os demais |
+| 5 | **Usuários** | Gestão admin de responsáveis |
+| 6 | **Dependentes** | Depende de Usuários e Configurações |
+| 7 | **Especialidades** | Tabela de apoio para Agendamentos |
+| 8 | **Localizações** | Tabela de apoio para Agendamentos |
+| 9 | **Agendamentos** | Depende de Especialidades, Localizações e Dependentes |
+| 10 | **Painel** | Consolidado final; depende de tudo |
 
 ---
 
@@ -13,85 +29,87 @@ medagenda-api/
 │   ├── main.ts
 │   ├── app.module.ts
 │   │
-│   ├── auth/
-│   │   ├── auth.module.ts
-│   │   ├── auth.controller.ts
-│   │   ├── auth.service.ts
-│   │   ├── strategies/
+│   ├── autenticacao/
+│   │   ├── autenticacao.module.ts
+│   │   ├── autenticacao.controller.ts
+│   │   ├── autenticacao.service.ts
+│   │   ├── estrategias/
 │   │   │   └── jwt.strategy.ts
-│   │   ├── guards/
-│   │   │   ├── jwt-auth.guard.ts
-│   │   │   └── roles.guard.ts
-│   │   ├── decorators/
-│   │   │   ├── current-user.decorator.ts
-│   │   │   └── roles.decorator.ts
+│   │   ├── guardas/
+│   │   │   ├── jwt-autenticacao.guard.ts
+│   │   │   └── papeis.guard.ts
+│   │   ├── decoradores/
+│   │   │   ├── usuario-atual.decorator.ts
+│   │   │   └── papeis.decorator.ts
 │   │   └── dto/
 │   │       ├── login.dto.ts
-│   │       └── register.dto.ts
+│   │       └── cadastro.dto.ts
 │   │
-│   ├── users/
-│   │   ├── users.module.ts
-│   │   ├── users.controller.ts
-│   │   ├── users.service.ts
+│   ├── usuarios/
+│   │   ├── usuarios.module.ts
+│   │   ├── usuarios.controller.ts
+│   │   ├── usuarios.service.ts
 │   │   └── dto/
-│   │       ├── update-user.dto.ts
-│   │       └── update-status.dto.ts
+│   │       ├── atualizar-usuario.dto.ts
+│   │       └── atualizar-status.dto.ts
 │   │
-│   ├── dependents/
-│   │   ├── dependents.module.ts
-│   │   ├── dependents.controller.ts
-│   │   ├── dependents.service.ts
+│   ├── dependentes/
+│   │   ├── dependentes.module.ts
+│   │   ├── dependentes.controller.ts
+│   │   ├── dependentes.service.ts
 │   │   └── dto/
-│   │       ├── create-dependent.dto.ts
-│   │       └── update-dependent.dto.ts
+│   │       ├── criar-dependente.dto.ts
+│   │       └── atualizar-dependente.dto.ts
 │   │
-│   ├── appointments/
-│   │   ├── appointments.module.ts
-│   │   ├── appointments.controller.ts
-│   │   ├── appointments.service.ts
+│   ├── agendamentos/
+│   │   ├── agendamentos.module.ts
+│   │   ├── agendamentos.controller.ts
+│   │   ├── agendamentos.service.ts
 │   │   └── dto/
-│   │       ├── create-appointment.dto.ts
-│   │       └── update-appointment.dto.ts
+│   │       ├── criar-agendamento.dto.ts
+│   │       └── atualizar-agendamento.dto.ts
 │   │
-│   ├── specialties/
-│   │   ├── specialties.module.ts
-│   │   ├── specialties.controller.ts
-│   │   ├── specialties.service.ts
+│   ├── especialidades/
+│   │   ├── especialidades.module.ts
+│   │   ├── especialidades.controller.ts
+│   │   ├── especialidades.service.ts
 │   │   └── dto/
-│   │       └── create-specialty.dto.ts
+│   │       ├── criar-especialidade.dto.ts
+│   │       └── atualizar-especialidade.dto.ts
 │   │
-│   ├── locations/
-│   │   ├── locations.module.ts
-│   │   ├── locations.controller.ts
-│   │   ├── locations.service.ts
+│   ├── localizacoes/
+│   │   ├── localizacoes.module.ts
+│   │   ├── localizacoes.controller.ts
+│   │   ├── localizacoes.service.ts
 │   │   └── dto/
-│   │       └── create-location.dto.ts
+│   │       ├── criar-localizacao.dto.ts
+│   │       └── atualizar-localizacao.dto.ts
 │   │
 │   ├── logs/
 │   │   ├── logs.module.ts
 │   │   ├── logs.controller.ts
 │   │   └── logs.service.ts
 │   │
-│   ├── settings/
-│   │   ├── settings.module.ts
-│   │   ├── settings.controller.ts
-│   │   ├── settings.service.ts
+│   ├── configuracoes/
+│   │   ├── configuracoes.module.ts
+│   │   ├── configuracoes.controller.ts
+│   │   ├── configuracoes.service.ts
 │   │   └── dto/
-│   │       └── update-settings.dto.ts
+│   │       └── atualizar-configuracoes.dto.ts
 │   │
-│   ├── dashboard/
-│   │   ├── dashboard.module.ts
-│   │   ├── dashboard.controller.ts
-│   │   └── dashboard.service.ts
+│   ├── painel/
+│   │   ├── painel.module.ts
+│   │   ├── painel.controller.ts
+│   │   └── painel.service.ts
 │   │
-│   └── entities/
-│       ├── user.entity.ts
-│       ├── dependent.entity.ts
-│       ├── appointment.entity.ts
-│       ├── specialty.entity.ts
-│       ├── location.entity.ts
+│   └── entidades/
+│       ├── usuario.entity.ts
+│       ├── dependente.entity.ts
+│       ├── agendamento.entity.ts
+│       ├── especialidade.entity.ts
+│       ├── localizacao.entity.ts
 │       ├── log.entity.ts
-│       └── system-settings.entity.ts
+│       └── configuracoes-sistema.entity.ts
 │
 ├── database/
 │   └── medagenda.sqlite
@@ -120,195 +138,195 @@ SESSION_TIMEOUT=30
 
 ---
 
-## Entities (TypeORM)
+## Entidades (TypeORM)
 
-### `user.entity.ts`
+### `usuario.entity.ts`
 
 ```typescript
-@Entity('users')
-export class User {
+@Entity('usuarios')
+export class Usuario {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
-  name: string;
+  nome: string;
 
   @Column({ unique: true, length: 11 })
   cpf: string;
 
   @Column()
-  password: string;  // bcrypt hash
+  senha: string;  // hash bcrypt
 
   @Column({ length: 4 })
-  pin: string;       // bcrypt hash
+  pin: string;    // hash bcrypt
 
   @Column({ default: false })
   isAdmin: boolean;
 
-  @Column({ default: 'active' })
-  status: 'active' | 'inactive';
+  @Column({ default: 'ativo' })
+  status: 'ativo' | 'inativo';
 
   @CreateDateColumn()
-  createdAt: Date;
+  criadoEm: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  atualizadoEm: Date;
 
-  @OneToMany(() => Dependent, (dep) => dep.user, { cascade: true })
-  dependents: Dependent[];
+  @OneToMany(() => Dependente, (dep) => dep.usuario, { cascade: true })
+  dependentes: Dependente[];
 
-  @OneToMany(() => Appointment, (apt) => apt.user, { cascade: true })
-  appointments: Appointment[];
+  @OneToMany(() => Agendamento, (age) => age.usuario, { cascade: true })
+  agendamentos: Agendamento[];
 
-  @OneToMany(() => Log, (log) => log.user)
+  @OneToMany(() => Log, (log) => log.usuario)
   logs: Log[];
 }
 ```
 
-### `dependent.entity.ts`
+### `dependente.entity.ts`
 
 ```typescript
-@Entity('dependents')
-export class Dependent {
+@Entity('dependentes')
+export class Dependente {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
-  name: string;
+  nome: string;
 
   @Column({ unique: true, length: 11 })
   cpf: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  criadoEm: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  atualizadoEm: Date;
 
-  @ManyToOne(() => User, (user) => user.dependents, { onDelete: 'CASCADE' })
-  user: User;
+  @ManyToOne(() => Usuario, (usuario) => usuario.dependentes, { onDelete: 'CASCADE' })
+  usuario: Usuario;
 
   @Column()
-  userId: string;
+  usuarioId: string;
 
-  @OneToMany(() => Appointment, (apt) => apt.dependent)
-  appointments: Appointment[];
+  @OneToMany(() => Agendamento, (age) => age.dependente)
+  agendamentos: Agendamento[];
 }
 ```
 
-### `appointment.entity.ts`
+### `agendamento.entity.ts`
 
 ```typescript
-@Entity('appointments')
-export class Appointment {
+@Entity('agendamentos')
+export class Agendamento {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ type: 'date' })
-  date: string;  // YYYY-MM-DD
+  data: string;  // YYYY-MM-DD
 
   @Column({ length: 5 })
-  time: string;  // HH:mm
+  horario: string;  // HH:mm
 
   @CreateDateColumn()
-  createdAt: Date;
+  criadoEm: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  atualizadoEm: Date;
 
   // Responsável dono do agendamento
-  @ManyToOne(() => User, (user) => user.appointments, { onDelete: 'CASCADE' })
-  user: User;
+  @ManyToOne(() => Usuario, (usuario) => usuario.agendamentos, { onDelete: 'CASCADE' })
+  usuario: Usuario;
 
   @Column()
-  userId: string;
+  usuarioId: string;
 
-  // Paciente: pode ser o próprio responsável (dependentId null) ou um dependente
-  @ManyToOne(() => Dependent, (dep) => dep.appointments, { nullable: true, onDelete: 'SET NULL' })
-  dependent: Dependent | null;
+  // Paciente: pode ser o próprio responsável (dependenteId null) ou um dependente
+  @ManyToOne(() => Dependente, (dep) => dep.agendamentos, { nullable: true, onDelete: 'SET NULL' })
+  dependente: Dependente | null;
 
   @Column({ nullable: true })
-  dependentId: string | null;
+  dependenteId: string | null;
 
   // Nome snapshot (desnormalizado para exibição mesmo se dependente for deletado)
   @Column()
-  patientName: string;
+  nomePaciente: string;
 
-  @ManyToOne(() => Specialty, { eager: true })
-  specialty: Specialty;
-
-  @Column()
-  specialtyId: string;
-
-  @ManyToOne(() => Location, { eager: true })
-  location: Location;
+  @ManyToOne(() => Especialidade, { eager: true })
+  especialidade: Especialidade;
 
   @Column()
-  locationId: string;
+  especialidadeId: string;
+
+  @ManyToOne(() => Localizacao, { eager: true })
+  localizacao: Localizacao;
+
+  @Column()
+  localizacaoId: string;
 }
 ```
 
-### `specialty.entity.ts`
+### `especialidade.entity.ts`
 
 ```typescript
-@Entity('specialties')
-export class Specialty {
+@Entity('especialidades')
+export class Especialidade {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ unique: true })
-  name: string;
+  nome: string;
 
   @Column({ default: true })
-  active: boolean;
+  ativo: boolean;
 
   @CreateDateColumn()
-  createdAt: Date;
+  criadoEm: Date;
 }
 ```
 
-### `location.entity.ts`
+### `localizacao.entity.ts`
 
 ```typescript
-@Entity('locations')
-export class Location {
+@Entity('localizacoes')
+export class Localizacao {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ unique: true })
-  name: string;    // Ex: "São Paulo SP"
+  nome: string;    // Ex: "São Paulo SP"
 
   @Column()
-  city: string;    // Ex: "São Paulo"
+  cidade: string;  // Ex: "São Paulo"
 
   @Column({ length: 2 })
-  state: string;   // Ex: "SP"
+  estado: string;  // Ex: "SP"
 
   @Column({ default: true })
-  active: boolean;
+  ativo: boolean;
 
   @CreateDateColumn()
-  createdAt: Date;
+  criadoEm: Date;
 }
 ```
 
 ### `log.entity.ts`
 
 ```typescript
-export type LogType =
+export type TipoLog =
   | 'login'
   | 'logout'
-  | 'failed_login'
-  | 'password_reset'
-  | 'pin_reset'
-  | 'user_blocked'
-  | 'user_unblocked'
-  | 'user_created'
-  | 'appointment_created'
-  | 'appointment_updated'
-  | 'appointment_deleted'
-  | 'dependent_created'
-  | 'dependent_deleted';
+  | 'login_falhou'
+  | 'senha_redefinida'
+  | 'pin_redefinido'
+  | 'usuario_bloqueado'
+  | 'usuario_desbloqueado'
+  | 'usuario_criado'
+  | 'agendamento_criado'
+  | 'agendamento_atualizado'
+  | 'agendamento_cancelado'
+  | 'dependente_criado'
+  | 'dependente_removido';
 
 @Entity('logs')
 export class Log {
@@ -316,65 +334,65 @@ export class Log {
   id: string;
 
   @Column()
-  type: LogType;
+  tipo: TipoLog;
 
   @Column({ nullable: true })
-  userCpf: string;
+  cpfUsuario: string;
 
   @Column({ nullable: true })
-  ipAddress: string;
+  enderecoIp: string;
 
   @Column({ type: 'text', nullable: true })
-  details: string;
+  detalhes: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  criadoEm: Date;
 
-  @ManyToOne(() => User, (user) => user.logs, { nullable: true, onDelete: 'SET NULL' })
-  user: User | null;
+  @ManyToOne(() => Usuario, (usuario) => usuario.logs, { nullable: true, onDelete: 'SET NULL' })
+  usuario: Usuario | null;
 
   @Column({ nullable: true })
-  userId: string | null;
+  usuarioId: string | null;
 }
 ```
 
-### `system-settings.entity.ts`
+### `configuracoes-sistema.entity.ts`
 
 ```typescript
-@Entity('system_settings')
-export class SystemSettings {
+@Entity('configuracoes_sistema')
+export class ConfiguracoesSistema {
   @PrimaryGeneratedColumn()
   id: number;  // Sempre id=1 (singleton)
 
   @Column({ default: 'MedAgenda' })
-  systemName: string;
+  nomeSistema: string;
 
   @Column({ default: false })
-  maintenanceMode: boolean;
+  modoManutencao: boolean;
 
   @Column({ default: true })
-  allowRegistrations: boolean;
+  permitirCadastros: boolean;
 
   @Column({ default: 5 })
-  maxDependents: number;
+  limiteDependentes: number;
 
   @Column({ default: 30 })
-  sessionTimeout: number;  // minutos
+  tempoSessao: number;  // minutos
 
   @Column({ default: true })
-  enableSecurityLogs: boolean;
+  habilitarLogsSeguranca: boolean;
 
   @Column({ default: false })
-  requireStrongPasswords: boolean;
+  exigirSenhaForte: boolean;
 
   @Column({ default: false })
-  enableEmailNotifications: boolean;
+  habilitarNotificacoesEmail: boolean;
 
   @Column({ nullable: true })
-  notificationEmail: string;
+  emailNotificacao: string;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  atualizadoEm: Date;
 }
 ```
 
@@ -391,18 +409,18 @@ export class SystemSettings {
     TypeOrmModule.forRoot({
       type: 'better-sqlite3',
       database: process.env.DB_PATH,
-      entities: [User, Dependent, Appointment, Specialty, Location, Log, SystemSettings],
+      entities: [Usuario, Dependente, Agendamento, Especialidade, Localizacao, Log, ConfiguracoesSistema],
       synchronize: true,  // apenas dev; em prod usar migrations
     }),
-    AuthModule,
-    UsersModule,
-    DependentsModule,
-    AppointmentsModule,
-    SpecialtiesModule,
-    LocationsModule,
+    AutenticacaoModule,
+    UsuariosModule,
+    DependentesModule,
+    AgendamentosModule,
+    EspecialidadesModule,
+    LocalizacoesModule,
     LogsModule,
-    SettingsModule,
-    DashboardModule,
+    ConfiguracoesModule,
+    PainelModule,
   ],
 })
 export class AppModule {}
@@ -410,52 +428,52 @@ export class AppModule {}
 
 ---
 
-## Auth Module
+## Módulo de Autenticação
 
 ### Endpoints
 
-| Método | Rota | Guard | Descrição |
-|--------|------|-------|-----------|
+| Método | Rota | Guarda | Descrição |
+|--------|------|--------|-----------|
 | `POST` | `/auth/login` | Público | Login com CPF + senha + PIN |
-| `POST` | `/auth/register` | Público (se registros habilitados) | Criar conta |
+| `POST` | `/auth/cadastro` | Público (se cadastros habilitados) | Criar conta |
 | `POST` | `/auth/logout` | JWT | Registrar logout nos logs |
-| `GET` | `/auth/me` | JWT | Dados do usuário logado |
-| `PATCH` | `/auth/me` | JWT | Atualizar nome do usuário logado |
-| `PATCH` | `/auth/me/password` | JWT | Alterar senha (requer senha atual) |
-| `PATCH` | `/auth/me/pin` | JWT | Alterar PIN (requer senha atual) |
+| `GET` | `/auth/eu` | JWT | Dados do usuário logado |
+| `PATCH` | `/auth/eu` | JWT | Atualizar nome do usuário logado |
+| `PATCH` | `/auth/eu/senha` | JWT | Alterar senha (requer senha atual) |
+| `PATCH` | `/auth/eu/pin` | JWT | Alterar PIN (requer senha atual) |
 
-### `auth.service.ts` — Métodos
+### `autenticacao.service.ts` — Métodos
 
 ```typescript
 // Valida credenciais e retorna JWT
-login(dto: LoginDto, ip: string): Promise<{ access_token: string; user: UserResponseDto }>
+login(dto: LoginDto, ip: string): Promise<{ token: string; usuario: RespostaUsuarioDto }>
 
 // Cria novo usuário após validações
-register(dto: RegisterDto): Promise<UserResponseDto>
+cadastrar(dto: CadastroDto): Promise<RespostaUsuarioDto>
 
 // Registra evento de logout no log
-logout(userId: string, ip: string): Promise<void>
+logout(usuarioId: string, ip: string): Promise<void>
 
-// Retorna usuário pelo id do JWT payload
-getMe(userId: string): Promise<UserResponseDto>
+// Retorna usuário pelo id do payload JWT
+buscarEu(usuarioId: string): Promise<RespostaUsuarioDto>
 
 // Atualiza nome do usuário logado
-updateMe(userId: string, dto: UpdateMeDto): Promise<UserResponseDto>
+atualizarEu(usuarioId: string, dto: AtualizarEuDto): Promise<RespostaUsuarioDto>
 
 // Troca senha validando a senha atual
-changePassword(userId: string, dto: ChangePasswordDto): Promise<void>
+alterarSenha(usuarioId: string, dto: AlterarSenhaDto): Promise<void>
 
 // Troca PIN validando a senha atual
-changePin(userId: string, dto: ChangePinDto): Promise<void>
+alterarPin(usuarioId: string, dto: AlterarPinDto): Promise<void>
 
 // [PRIVADO] Valida CPF com dígitos verificadores
-private validateCpf(cpf: string): boolean
+private validarCpf(cpf: string): boolean
 
 // [PRIVADO] Verifica se CPF já existe
-private cpfExists(cpf: string): Promise<boolean>
+private cpfExiste(cpf: string): Promise<boolean>
 
-// [PRIVADO] Verifica se registros estão habilitados nas settings
-private registrationsEnabled(): Promise<boolean>
+// [PRIVADO] Verifica se cadastros estão habilitados nas configurações
+private cadastrosHabilitados(): Promise<boolean>
 ```
 
 ### DTOs
@@ -467,23 +485,23 @@ export class LoginDto {
   cpf: string;
 
   @IsString() @Length(6, 6)
-  password: string;
+  senha: string;
 
   @IsString() @Length(4, 4)
   @IsNumberString()
   pin: string;
 }
 
-// register.dto.ts
-export class RegisterDto {
+// cadastro.dto.ts
+export class CadastroDto {
   @IsString() @Matches(/^[A-Za-zÀ-ÿ\s]+$/) @MinLength(3)
-  name: string;
+  nome: string;
 
   @IsString() @Length(11, 11) @IsNumberString()
   cpf: string;
 
   @IsString() @Length(6, 6) @IsAlphanumeric()
-  password: string;
+  senha: string;
 
   @IsString() @Length(4, 4) @IsNumberString()
   pin: string;
@@ -493,128 +511,128 @@ export class RegisterDto {
 ### `jwt.strategy.ts`
 
 ```typescript
-// Payload: { sub: userId, cpf, isAdmin }
-// Valida token e injeta usuário via @CurrentUser()
+// Payload: { sub: usuarioId, cpf, isAdmin }
+// Valida token e injeta usuário via @UsuarioAtual()
 ```
 
 ---
 
-## Users Module
+## Módulo de Usuários
 
 ### Endpoints (todos exigem `isAdmin: true`)
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| `GET` | `/users` | Listar todos os responsáveis |
-| `GET` | `/users/stats` | Contadores: total, ativos, inativos, dependentes |
-| `GET` | `/users/:id` | Detalhe do responsável |
-| `GET` | `/users/:id/dependents` | Dependentes do responsável |
-| `GET` | `/users/:id/appointments` | Consultas do responsável |
-| `PATCH` | `/users/:id` | Editar nome do responsável |
-| `PATCH` | `/users/:id/status` | Ativar ou inativar conta |
-| `PATCH` | `/users/:id/reset-pin` | Gerar novo PIN aleatório |
-| `DELETE` | `/users/:id` | Deletar responsável (cascade) |
+| `GET` | `/usuarios` | Listar todos os responsáveis |
+| `GET` | `/usuarios/estatisticas` | Contadores: total, ativos, inativos, dependentes |
+| `GET` | `/usuarios/:id` | Detalhe do responsável |
+| `GET` | `/usuarios/:id/dependentes` | Dependentes do responsável |
+| `GET` | `/usuarios/:id/agendamentos` | Agendamentos do responsável |
+| `PATCH` | `/usuarios/:id` | Editar nome do responsável |
+| `PATCH` | `/usuarios/:id/status` | Ativar ou inativar conta |
+| `PATCH` | `/usuarios/:id/redefinir-pin` | Gerar novo PIN aleatório |
+| `DELETE` | `/usuarios/:id` | Deletar responsável (cascade) |
 
-### `users.service.ts` — Métodos
+### `usuarios.service.ts` — Métodos
 
 ```typescript
 // Lista todos com paginação e busca por nome/CPF
-findAll(query: { search?: string; status?: string; page: number; limit: number }): Promise<PaginatedResult<User>>
+buscarTodos(query: { busca?: string; status?: string; pagina: number; limite: number }): Promise<ResultadoPaginado<Usuario>>
 
 // Contadores para o painel admin
-getStats(): Promise<UserStatsDto>
+buscarEstatisticas(): Promise<EstatisticasUsuarioDto>
 
 // Retorna usuário por id, lança 404 se não existir
-findOne(id: string): Promise<User>
+buscarUm(id: string): Promise<Usuario>
 
 // Lista dependentes de um responsável específico
-findDependents(userId: string): Promise<Dependent[]>
+buscarDependentes(usuarioId: string): Promise<Dependente[]>
 
-// Lista consultas de um responsável específico
-findAppointments(userId: string): Promise<Appointment[]>
+// Lista agendamentos de um responsável específico
+buscarAgendamentos(usuarioId: string): Promise<Agendamento[]>
 
 // Atualiza nome do responsável
-update(id: string, dto: UpdateUserDto): Promise<User>
+atualizar(id: string, dto: AtualizarUsuarioDto): Promise<Usuario>
 
-// Alterna status active/inactive, registra log
-toggleStatus(id: string, requesterId: string, ip: string): Promise<User>
+// Alterna status ativo/inativo, registra log
+alternarStatus(id: string, requisitanteId: string, ip: string): Promise<Usuario>
 
-// Gera PIN de 4 dígitos, aplica hash, salva e retorna PIN em plain text
-resetPin(id: string, requesterId: string, ip: string): Promise<{ newPin: string }>
+// Gera PIN de 4 dígitos, aplica hash, salva e retorna PIN em texto simples
+redefinirPin(id: string, requisitanteId: string, ip: string): Promise<{ novoPin: string }>
 
-// Remove responsável e todos seus dependentes/consultas por cascade
-remove(id: string): Promise<void>
+// Remove responsável e todos seus dependentes/agendamentos por cascade
+remover(id: string): Promise<void>
 ```
 
 ### DTOs
 
 ```typescript
-// update-user.dto.ts
-export class UpdateUserDto {
+// atualizar-usuario.dto.ts
+export class AtualizarUsuarioDto {
   @IsOptional() @IsString() @Matches(/^[A-Za-zÀ-ÿ\s]+$/) @MinLength(3)
-  name?: string;
+  nome?: string;
 }
 
-// update-status.dto.ts
-export class UpdateStatusDto {
-  @IsIn(['active', 'inactive'])
-  status: 'active' | 'inactive';
+// atualizar-status.dto.ts
+export class AtualizarStatusDto {
+  @IsIn(['ativo', 'inativo'])
+  status: 'ativo' | 'inativo';
 }
 ```
 
 ---
 
-## Dependents Module
+## Módulo de Dependentes
 
 ### Endpoints
 
-| Método | Rota | Guard | Descrição |
-|--------|------|-------|-----------|
-| `GET` | `/dependents` | JWT | Dependentes do usuário logado (admin vê todos) |
-| `POST` | `/dependents` | JWT | Criar dependente para o usuário logado |
-| `GET` | `/dependents/:id` | JWT | Detalhe (owner ou admin) |
-| `PATCH` | `/dependents/:id` | JWT | Editar (owner ou admin) |
-| `DELETE` | `/dependents/:id` | JWT | Deletar (owner ou admin) |
+| Método | Rota | Guarda | Descrição |
+|--------|------|--------|-----------|
+| `GET` | `/dependentes` | JWT | Dependentes do usuário logado (admin vê todos) |
+| `POST` | `/dependentes` | JWT | Criar dependente para o usuário logado |
+| `GET` | `/dependentes/:id` | JWT | Detalhe (dono ou admin) |
+| `PATCH` | `/dependentes/:id` | JWT | Editar (dono ou admin) |
+| `DELETE` | `/dependentes/:id` | JWT | Deletar (dono ou admin) |
 
-### `dependents.service.ts` — Métodos
+### `dependentes.service.ts` — Métodos
 
 ```typescript
 // Admin recebe todos; usuário normal recebe só os seus
-findAll(requesterId: string, isAdmin: boolean): Promise<Dependent[]>
+buscarTodos(requisitanteId: string, isAdmin: boolean): Promise<Dependente[]>
 
-// Cria dependente vinculado ao userId
-// Valida: CPF único, limite maxDependents das settings, formato de CPF
-create(userId: string, dto: CreateDependentDto): Promise<Dependent>
+// Cria dependente vinculado ao usuarioId
+// Valida: CPF único, limite de dependentes das configurações, formato de CPF
+criar(usuarioId: string, dto: CriarDependenteDto): Promise<Dependente>
 
-// Retorna dependente; valida se requester é owner ou admin
-findOne(id: string, requesterId: string, isAdmin: boolean): Promise<Dependent>
+// Retorna dependente; valida se requisitante é dono ou admin
+buscarUm(id: string, requisitanteId: string, isAdmin: boolean): Promise<Dependente>
 
 // Atualiza nome e/ou CPF do dependente
-update(id: string, dto: UpdateDependentDto, requesterId: string, isAdmin: boolean): Promise<Dependent>
+atualizar(id: string, dto: AtualizarDependenteDto, requisitanteId: string, isAdmin: boolean): Promise<Dependente>
 
-// Remove dependente e seta dependentId como null nas consultas associadas
-remove(id: string, requesterId: string, isAdmin: boolean): Promise<void>
+// Remove dependente e seta dependenteId como null nos agendamentos associados
+remover(id: string, requisitanteId: string, isAdmin: boolean): Promise<void>
 
-// [PRIVADO] Verifica se requester tem acesso ao dependente
-private checkOwnership(dependent: Dependent, requesterId: string, isAdmin: boolean): void
+// [PRIVADO] Verifica se requisitante tem acesso ao dependente
+private verificarPropriedade(dependente: Dependente, requisitanteId: string, isAdmin: boolean): void
 ```
 
 ### DTOs
 
 ```typescript
-// create-dependent.dto.ts
-export class CreateDependentDto {
+// criar-dependente.dto.ts
+export class CriarDependenteDto {
   @IsString() @Matches(/^[A-Za-zÀ-ÿ\s]+$/) @MinLength(3)
-  name: string;
+  nome: string;
 
   @IsString() @Length(11, 11) @IsNumberString()
   cpf: string;
 }
 
-// update-dependent.dto.ts
-export class UpdateDependentDto {
+// atualizar-dependente.dto.ts
+export class AtualizarDependenteDto {
   @IsOptional() @IsString() @Matches(/^[A-Za-zÀ-ÿ\s]+$/) @MinLength(3)
-  name?: string;
+  nome?: string;
 
   @IsOptional() @IsString() @Length(11, 11) @IsNumberString()
   cpf?: string;
@@ -623,383 +641,383 @@ export class UpdateDependentDto {
 
 ---
 
-## Appointments Module
+## Módulo de Agendamentos
 
 ### Endpoints
 
-| Método | Rota | Guard | Descrição |
-|--------|------|-------|-----------|
-| `GET` | `/appointments` | JWT | Consultas do usuário logado (admin vê todas) |
-| `GET` | `/appointments/calendar` | JWT | Consultas agrupadas por data para o calendário |
-| `GET` | `/appointments/:id` | JWT | Detalhe da consulta (owner ou admin) |
-| `POST` | `/appointments` | JWT | Criar consulta |
-| `PATCH` | `/appointments/:id` | JWT | Editar consulta (owner ou admin) |
-| `DELETE` | `/appointments/:id` | JWT | Cancelar consulta (owner ou admin) |
+| Método | Rota | Guarda | Descrição |
+|--------|------|--------|-----------|
+| `GET` | `/agendamentos` | JWT | Agendamentos do usuário logado (admin vê todos) |
+| `GET` | `/agendamentos/calendario` | JWT | Agendamentos agrupados por data para o calendário |
+| `GET` | `/agendamentos/:id` | JWT | Detalhe do agendamento (dono ou admin) |
+| `POST` | `/agendamentos` | JWT | Criar agendamento |
+| `PATCH` | `/agendamentos/:id` | JWT | Editar agendamento (dono ou admin) |
+| `DELETE` | `/agendamentos/:id` | JWT | Cancelar agendamento (dono ou admin) |
 
-**Query params para `GET /appointments`:**
-- `month` (1-12) + `year` (YYYY) → filtra por mês
-- `dependentId` → filtra por dependente
-- `specialtyId` → filtra por especialidade
-- `locationId` → filtra por local
-- `page` + `limit` → paginação
+**Query params para `GET /agendamentos`:**
+- `mes` (1-12) + `ano` (YYYY) → filtra por mês
+- `dependenteId` → filtra por dependente
+- `especialidadeId` → filtra por especialidade
+- `localizacaoId` → filtra por local
+- `pagina` + `limite` → paginação
 
-**Query params para `GET /appointments/calendar`:**
-- `month` (obrigatório)
-- `year` (obrigatório)
+**Query params para `GET /agendamentos/calendario`:**
+- `mes` (obrigatório)
+- `ano` (obrigatório)
 
-### `appointments.service.ts` — Métodos
+### `agendamentos.service.ts` — Métodos
 
 ```typescript
-// Lista consultas com filtros; admin vê todas, usuário vê as suas
-findAll(
-  requesterId: string,
+// Lista agendamentos com filtros; admin vê todos, usuário vê os seus
+buscarTodos(
+  requisitanteId: string,
   isAdmin: boolean,
-  filters: AppointmentFiltersDto
-): Promise<PaginatedResult<Appointment>>
+  filtros: FiltrosAgendamentoDto
+): Promise<ResultadoPaginado<Agendamento>>
 
-// Retorna array de datas { date: 'YYYY-MM-DD', count: number } para destacar no calendário
-getCalendarData(
-  requesterId: string,
+// Retorna array de datas { data: 'YYYY-MM-DD', quantidade: number } para destacar no calendário
+buscarDadosCalendario(
+  requisitanteId: string,
   isAdmin: boolean,
-  month: number,
-  year: number
-): Promise<CalendarDay[]>
+  mes: number,
+  ano: number
+): Promise<DiaCalendario[]>
 
-// Retorna consulta com validação de ownership
-findOne(id: string, requesterId: string, isAdmin: boolean): Promise<Appointment>
+// Retorna agendamento com validação de propriedade
+buscarUm(id: string, requisitanteId: string, isAdmin: boolean): Promise<Agendamento>
 
-// Cria consulta
-// Valida: data não no passado, horário disponível para o paciente, specialty/location existem
-create(userId: string, dto: CreateAppointmentDto): Promise<Appointment>
+// Cria agendamento
+// Valida: data não no passado, horário disponível para o paciente, especialidade/localização existem
+criar(usuarioId: string, dto: CriarAgendamentoDto): Promise<Agendamento>
 
-// Atualiza data, horário, especialidade ou local de uma consulta
-update(
+// Atualiza data, horário, especialidade ou localização de um agendamento
+atualizar(
   id: string,
-  dto: UpdateAppointmentDto,
-  requesterId: string,
+  dto: AtualizarAgendamentoDto,
+  requisitanteId: string,
   isAdmin: boolean
-): Promise<Appointment>
+): Promise<Agendamento>
 
-// Cancela consulta
-remove(id: string, requesterId: string, isAdmin: boolean): Promise<void>
+// Cancela agendamento
+remover(id: string, requisitanteId: string, isAdmin: boolean): Promise<void>
 
-// [PRIVADO] Verifica se paciente já tem consulta no mesmo dia/horário
-private checkConflict(patientId: string, date: string, time: string, excludeId?: string): Promise<void>
+// [PRIVADO] Verifica se paciente já tem agendamento no mesmo dia/horário
+private verificarConflito(pacienteId: string, data: string, horario: string, excluirId?: string): Promise<void>
 
 // [PRIVADO] Resolve nome snapshot do paciente (responsável ou dependente)
-private resolvePatientName(userId: string, dependentId?: string): Promise<string>
+private resolverNomePaciente(usuarioId: string, dependenteId?: string): Promise<string>
 ```
 
 ### DTOs
 
 ```typescript
-// create-appointment.dto.ts
-export class CreateAppointmentDto {
+// criar-agendamento.dto.ts
+export class CriarAgendamentoDto {
   @IsDateString()
-  date: string;  // YYYY-MM-DD
+  data: string;  // YYYY-MM-DD
 
   @IsString() @Matches(/^\d{2}:\d{2}$/)
-  time: string;  // HH:mm
+  horario: string;  // HH:mm
 
   @IsUUID()
-  specialtyId: string;
+  especialidadeId: string;
 
   @IsUUID()
-  locationId: string;
+  localizacaoId: string;
 
   // Se null, o paciente é o próprio responsável
   @IsOptional() @IsUUID()
-  dependentId?: string;
+  dependenteId?: string;
 }
 
-// update-appointment.dto.ts
-export class UpdateAppointmentDto {
+// atualizar-agendamento.dto.ts
+export class AtualizarAgendamentoDto {
   @IsOptional() @IsDateString()
-  date?: string;
+  data?: string;
 
   @IsOptional() @IsString() @Matches(/^\d{2}:\d{2}$/)
-  time?: string;
+  horario?: string;
 
   @IsOptional() @IsUUID()
-  specialtyId?: string;
+  especialidadeId?: string;
 
   @IsOptional() @IsUUID()
-  locationId?: string;
+  localizacaoId?: string;
 }
 ```
 
 ---
 
-## Specialties Module
+## Módulo de Especialidades
 
 ### Endpoints
 
-| Método | Rota | Guard | Descrição |
-|--------|------|-------|-----------|
-| `GET` | `/specialties` | JWT | Listar especialidades ativas |
-| `GET` | `/specialties/all` | Admin | Listar todas (incluindo inativas) |
-| `POST` | `/specialties` | Admin | Criar especialidade |
-| `PATCH` | `/specialties/:id` | Admin | Editar nome ou status |
-| `DELETE` | `/specialties/:id` | Admin | Deletar (bloqueia se tiver consultas vinculadas) |
+| Método | Rota | Guarda | Descrição |
+|--------|------|--------|-----------|
+| `GET` | `/especialidades` | JWT | Listar especialidades ativas |
+| `GET` | `/especialidades/todas` | Admin | Listar todas (incluindo inativas) |
+| `POST` | `/especialidades` | Admin | Criar especialidade |
+| `PATCH` | `/especialidades/:id` | Admin | Editar nome ou status |
+| `DELETE` | `/especialidades/:id` | Admin | Deletar (bloqueia se tiver agendamentos vinculados) |
 
-### `specialties.service.ts` — Métodos
+### `especialidades.service.ts` — Métodos
 
 ```typescript
 // Retorna especialidades ativas (para selects do usuário)
-findActive(): Promise<Specialty[]>
+buscarAtivas(): Promise<Especialidade[]>
 
 // Retorna todas (admin)
-findAll(): Promise<Specialty[]>
+buscarTodas(): Promise<Especialidade[]>
 
 // Cria nova especialidade, valida nome único
-create(dto: CreateSpecialtyDto): Promise<Specialty>
+criar(dto: CriarEspecialidadeDto): Promise<Especialidade>
 
 // Edita nome ou ativa/desativa
-update(id: string, dto: UpdateSpecialtyDto): Promise<Specialty>
+atualizar(id: string, dto: AtualizarEspecialidadeDto): Promise<Especialidade>
 
-// Deleta apenas se não tiver consultas associadas
-remove(id: string): Promise<void>
+// Deleta apenas se não tiver agendamentos associados
+remover(id: string): Promise<void>
 ```
 
 ### DTOs
 
 ```typescript
-// create-specialty.dto.ts
-export class CreateSpecialtyDto {
+// criar-especialidade.dto.ts
+export class CriarEspecialidadeDto {
   @IsString() @MinLength(3) @MaxLength(100)
-  name: string;
+  nome: string;
 }
 
-// update-specialty.dto.ts
-export class UpdateSpecialtyDto {
+// atualizar-especialidade.dto.ts
+export class AtualizarEspecialidadeDto {
   @IsOptional() @IsString() @MinLength(3) @MaxLength(100)
-  name?: string;
+  nome?: string;
 
   @IsOptional() @IsBoolean()
-  active?: boolean;
+  ativo?: boolean;
 }
 ```
 
 ---
 
-## Locations Module
+## Módulo de Localizações
 
 ### Endpoints
 
-| Método | Rota | Guard | Descrição |
-|--------|------|-------|-----------|
-| `GET` | `/locations` | JWT | Listar locais ativos |
-| `GET` | `/locations/all` | Admin | Listar todos (incluindo inativos) |
-| `POST` | `/locations` | Admin | Criar local |
-| `PATCH` | `/locations/:id` | Admin | Editar local |
-| `DELETE` | `/locations/:id` | Admin | Deletar (bloqueia se tiver consultas vinculadas) |
+| Método | Rota | Guarda | Descrição |
+|--------|------|--------|-----------|
+| `GET` | `/localizacoes` | JWT | Listar localizações ativas |
+| `GET` | `/localizacoes/todas` | Admin | Listar todas (incluindo inativas) |
+| `POST` | `/localizacoes` | Admin | Criar localização |
+| `PATCH` | `/localizacoes/:id` | Admin | Editar localização |
+| `DELETE` | `/localizacoes/:id` | Admin | Deletar (bloqueia se tiver agendamentos vinculados) |
 
-### `locations.service.ts` — Métodos
+### `localizacoes.service.ts` — Métodos
 
 ```typescript
-// Retorna locais ativos (para selects do usuário)
-findActive(): Promise<Location[]>
+// Retorna localizações ativas (para selects do usuário)
+buscarAtivas(): Promise<Localizacao[]>
 
-// Retorna todos (admin)
-findAll(): Promise<Location[]>
+// Retorna todas (admin)
+buscarTodas(): Promise<Localizacao[]>
 
-// Cria novo local, valida unicidade do name
-create(dto: CreateLocationDto): Promise<Location>
+// Cria nova localização, valida unicidade do nome
+criar(dto: CriarLocalizacaoDto): Promise<Localizacao>
 
 // Edita nome, cidade, estado ou ativa/desativa
-update(id: string, dto: UpdateLocationDto): Promise<Location>
+atualizar(id: string, dto: AtualizarLocalizacaoDto): Promise<Localizacao>
 
-// Deleta apenas se não tiver consultas associadas
-remove(id: string): Promise<void>
+// Deleta apenas se não tiver agendamentos associados
+remover(id: string): Promise<void>
 ```
 
 ### DTOs
 
 ```typescript
-// create-location.dto.ts
-export class CreateLocationDto {
+// criar-localizacao.dto.ts
+export class CriarLocalizacaoDto {
   @IsString() @MinLength(3)
-  name: string;  // "São Paulo SP"
+  nome: string;  // "São Paulo SP"
 
   @IsString() @MinLength(2)
-  city: string;
+  cidade: string;
 
   @IsString() @Length(2, 2)
-  state: string;
+  estado: string;
 }
 
-// update-location.dto.ts
-export class UpdateLocationDto {
+// atualizar-localizacao.dto.ts
+export class AtualizarLocalizacaoDto {
   @IsOptional() @IsString() @MinLength(3)
-  name?: string;
+  nome?: string;
 
   @IsOptional() @IsString() @MinLength(2)
-  city?: string;
+  cidade?: string;
 
   @IsOptional() @IsString() @Length(2, 2)
-  state?: string;
+  estado?: string;
 
   @IsOptional() @IsBoolean()
-  active?: boolean;
+  ativo?: boolean;
 }
 ```
 
 ---
 
-## Logs Module
+## Módulo de Logs
 
 ### Endpoints (todos Admin)
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
 | `GET` | `/logs` | Listar logs com filtros e paginação |
-| `GET` | `/logs/stats` | Contadores por tipo de evento |
+| `GET` | `/logs/estatisticas` | Contadores por tipo de evento |
 
 **Query params para `GET /logs`:**
-- `type` → filtrar por tipo de evento
-- `userId` → filtrar por usuário
+- `tipo` → filtrar por tipo de evento
+- `usuarioId` → filtrar por usuário
 - `cpf` → filtrar por CPF
-- `from` / `to` → intervalo de datas (ISO)
-- `page` + `limit`
+- `de` / `ate` → intervalo de datas (ISO)
+- `pagina` + `limite`
 
 ### `logs.service.ts` — Métodos
 
 ```typescript
 // Lista logs com filtros; paginado
-findAll(filters: LogFiltersDto): Promise<PaginatedResult<Log>>
+buscarTodos(filtros: FiltrosLogDto): Promise<ResultadoPaginado<Log>>
 
-// Contadores por tipo para o dashboard
-getStats(days?: number): Promise<LogStatsDto>
+// Contadores por tipo para o painel
+buscarEstatisticas(dias?: number): Promise<EstatisticasLogDto>
 
-// [USADO INTERNAMENTE pelos outros services] Registra evento no banco
-create(data: {
-  type: LogType;
-  userId?: string;
-  userCpf?: string;
-  ipAddress?: string;
-  details?: string;
+// [USADO INTERNAMENTE pelos outros serviços] Registra evento no banco
+registrar(dados: {
+  tipo: TipoLog;
+  usuarioId?: string;
+  cpfUsuario?: string;
+  enderecoIp?: string;
+  detalhes?: string;
 }): Promise<void>
 ```
 
-> `logs.service.ts` é injetado pelos demais módulos (Auth, Users, Appointments, Dependents) para registrar eventos automaticamente.
+> `logs.service.ts` é injetado pelos demais módulos (Autenticação, Usuários, Agendamentos, Dependentes) para registrar eventos automaticamente.
 
 ---
 
-## Settings Module
+## Módulo de Configurações
 
 ### Endpoints (todos Admin)
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| `GET` | `/settings` | Retorna configurações atuais |
-| `PATCH` | `/settings` | Atualiza uma ou mais configurações |
+| `GET` | `/configuracoes` | Retorna configurações atuais |
+| `PATCH` | `/configuracoes` | Atualiza uma ou mais configurações |
 
-### `settings.service.ts` — Métodos
+### `configuracoes.service.ts` — Métodos
 
 ```typescript
-// Retorna registro singleton (cria com defaults se não existir)
-getSettings(): Promise<SystemSettings>
+// Retorna registro singleton (cria com padrões se não existir)
+buscarConfiguracoes(): Promise<ConfiguracoesSistema>
 
 // Atualiza campos parcialmente
-update(dto: UpdateSettingsDto): Promise<SystemSettings>
+atualizar(dto: AtualizarConfiguracoesDto): Promise<ConfiguracoesSistema>
 
 // [USADO INTERNAMENTE] Retorna valor de uma chave específica
-getValue<K extends keyof SystemSettings>(key: K): Promise<SystemSettings[K]>
+buscarValor<K extends keyof ConfiguracoesSistema>(chave: K): Promise<ConfiguracoesSistema[K]>
 ```
 
 ### DTOs
 
 ```typescript
-// update-settings.dto.ts
-export class UpdateSettingsDto {
+// atualizar-configuracoes.dto.ts
+export class AtualizarConfiguracoesDto {
   @IsOptional() @IsString() @MinLength(3)
-  systemName?: string;
+  nomeSistema?: string;
 
   @IsOptional() @IsBoolean()
-  maintenanceMode?: boolean;
+  modoManutencao?: boolean;
 
   @IsOptional() @IsBoolean()
-  allowRegistrations?: boolean;
+  permitirCadastros?: boolean;
 
   @IsOptional() @IsInt() @Min(1) @Max(10)
-  maxDependents?: number;
+  limiteDependentes?: number;
 
   @IsOptional() @IsInt() @Min(5) @Max(120)
-  sessionTimeout?: number;
+  tempoSessao?: number;
 
   @IsOptional() @IsBoolean()
-  enableSecurityLogs?: boolean;
+  habilitarLogsSeguranca?: boolean;
 
   @IsOptional() @IsBoolean()
-  requireStrongPasswords?: boolean;
+  exigirSenhaForte?: boolean;
 
   @IsOptional() @IsBoolean()
-  enableEmailNotifications?: boolean;
+  habilitarNotificacoesEmail?: boolean;
 
   @IsOptional() @IsEmail()
-  notificationEmail?: string;
+  emailNotificacao?: string;
 }
 ```
 
 ---
 
-## Dashboard Module
+## Módulo do Painel
 
 ### Endpoints (todos Admin)
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| `GET` | `/dashboard/stats` | Contadores principais para o painel |
-| `GET` | `/dashboard/chart` | Dados de agendamentos para o gráfico |
+| `GET` | `/painel/estatisticas` | Contadores principais para o painel |
+| `GET` | `/painel/grafico` | Dados de agendamentos para o gráfico |
 
-### `dashboard.service.ts` — Métodos
+### `painel.service.ts` — Métodos
 
 ```typescript
 // Retorna contadores consolidados
-getStats(): Promise<{
-  totalUsers: number;
-  totalDependents: number;
-  appointmentsThisMonth: number;
-  activeUsers: number;
-  inactiveUsers: number;
-  appointmentsToday: number;
-  systemAlerts: number;  // ex: usuários bloqueados + modo manutenção
+buscarEstatisticas(): Promise<{
+  totalUsuarios: number;
+  totalDependentes: number;
+  agendamentosNoMes: number;
+  usuariosAtivos: number;
+  usuariosInativos: number;
+  agendamentosHoje: number;
+  alertasSistema: number;  // ex: usuários bloqueados + modo manutenção
 }>
 
 // Retorna agendamentos dos últimos N dias para o gráfico de barras
-getAppointmentsChart(days?: number): Promise<Array<{
-  date: string;       // YYYY-MM-DD
-  label: string;      // "Seg", "Ter", etc.
-  count: number;
+buscarGraficoAgendamentos(dias?: number): Promise<Array<{
+  data: string;    // YYYY-MM-DD
+  rotulo: string;  // "Seg", "Ter", etc.
+  quantidade: number;
 }>>
 ```
 
 ---
 
-## Guards e Decorators
+## Guardas e Decoradores
 
-### `jwt-auth.guard.ts`
-Estende `AuthGuard('jwt')` do Passport. Aplicado globalmente via `APP_GUARD` no `AppModule`.  
-Rotas públicas são marcadas com `@Public()`.
+### `jwt-autenticacao.guard.ts`
+Estende `AuthGuard('jwt')` do Passport. Aplicado globalmente via `APP_GUARD` no `AppModule`.
+Rotas públicas são marcadas com `@Publico()`.
 
-### `roles.guard.ts`
-Verifica se `request.user.isAdmin === true` quando a rota é marcada com `@Roles('admin')`.
+### `papeis.guard.ts`
+Verifica se `request.usuario.isAdmin === true` quando a rota é marcada com `@Papeis('admin')`.
 
-### `current-user.decorator.ts`
+### `usuario-atual.decorator.ts`
 ```typescript
 // Injeta o payload decodificado do JWT
-export const CurrentUser = createParamDecorator(
+export const UsuarioAtual = createParamDecorator(
   (data, ctx) => ctx.switchToHttp().getRequest().user
 );
 ```
 
-### `roles.decorator.ts`
+### `papeis.decorator.ts`
 ```typescript
-// Marca rota como admin-only
-export const Roles = (...roles: string[]) => SetMetadata('roles', roles);
+// Marca rota como somente admin
+export const Papeis = (...papeis: string[]) => SetMetadata('papeis', papeis);
 
 // Marca rota como pública (sem JWT)
-export const Public = () => SetMetadata('isPublic', true);
+export const Publico = () => SetMetadata('isPublico', true);
 ```
 
 ---
@@ -1008,10 +1026,10 @@ export const Public = () => SetMetadata('isPublic', true);
 
 Ao subir a aplicação pela primeira vez, um `OnApplicationBootstrap` no `AppModule` executa:
 
-1. Criar usuário admin com CPF do `.env`, senha e PIN com bcrypt hash
-2. Popular `specialties` com as 16 especialidades padrão
-3. Popular `locations` com as 15 cidades padrão
-4. Criar registro singleton de `SystemSettings` com valores padrão
+1. Criar usuário admin com CPF do `.env`, senha e PIN com hash bcrypt
+2. Popular `especialidades` com as 16 especialidades padrão
+3. Popular `localizacoes` com as 15 cidades padrão
+4. Criar registro singleton de `ConfiguracoesSistema` com valores padrão
 
 ---
 
@@ -1019,21 +1037,21 @@ Ao subir a aplicação pela primeira vez, um `OnApplicationBootstrap` no `AppMod
 
 ```
 POST /auth/login
-  → Busca user por CPF
-  → Verifica status !== 'inactive'  (HTTP 403 se bloqueado)
-  → bcrypt.compare(password, user.password)
-  → bcrypt.compare(pin, user.pin)
-  → Registra log 'login' (ou 'failed_login' em caso de falha)
+  → Busca usuário por CPF
+  → Verifica status !== 'inativo'  (HTTP 403 se bloqueado)
+  → bcrypt.compare(senha, usuario.senha)
+  → bcrypt.compare(pin, usuario.pin)
+  → Registra log 'login' (ou 'login_falhou' em caso de falha)
   → Retorna JWT { sub, cpf, isAdmin }
 
-POST /auth/register
-  → Verifica settings.allowRegistrations
+POST /auth/cadastro
+  → Verifica configuracoes.permitirCadastros
   → Valida CPF (algoritmo dígito verificador)
   → Verifica unicidade do CPF
   → Valida nome, senha, PIN
   → Hash de senha e PIN com bcrypt
-  → Salva User
-  → Registra log 'user_created'
+  → Salva Usuário
+  → Registra log 'usuario_criado'
   → Retorna JWT + dados do usuário
 ```
 
@@ -1046,25 +1064,25 @@ Todos os endpoints retornam JSON seguindo o padrão:
 ```typescript
 // Sucesso com dados
 {
-  "data": { ... }  // ou [ ... ]
+  "dados": { ... }  // ou [ ... ]
 }
 
 // Sucesso paginado
 {
-  "data": [ ... ],
+  "dados": [ ... ],
   "meta": {
     "total": 100,
-    "page": 1,
-    "limit": 20,
-    "totalPages": 5
+    "pagina": 1,
+    "limite": 20,
+    "totalPaginas": 5
   }
 }
 
 // Erro
 {
   "statusCode": 400,
-  "message": "CPF já cadastrado",
-  "error": "Bad Request"
+  "mensagem": "CPF já cadastrado",
+  "erro": "Bad Request"
 }
 ```
 
@@ -1110,27 +1128,27 @@ Todos os endpoints retornam JSON seguindo o padrão:
 | Operação no Frontend | Endpoint Backend |
 |----------------------|-----------------|
 | Login | `POST /auth/login` |
-| Cadastro | `POST /auth/register` |
+| Cadastro | `POST /auth/cadastro` |
 | Logout | `POST /auth/logout` |
-| Dashboard — carregar consultas do mês | `GET /appointments/calendar?month=&year=` |
-| Dashboard — abrir modal de data | `GET /appointments?month=&year=` |
-| Agendar consulta | `POST /appointments` |
-| Editar consulta | `PATCH /appointments/:id` |
-| Cancelar consulta | `DELETE /appointments/:id` |
-| Listar especialidades (select) | `GET /specialties` |
-| Listar locais (select) | `GET /locations` |
-| Listar dependentes (select) | `GET /dependents` |
-| Criar dependente | `POST /dependents` |
-| Deletar dependente | `DELETE /dependents/:id` |
-| Admin — estatísticas | `GET /dashboard/stats` |
-| Admin — gráfico | `GET /dashboard/chart` |
-| Admin — listar usuários | `GET /users?search=&status=&page=&limit=` |
-| Admin — stats de usuários | `GET /users/stats` |
-| Admin — bloquear/desbloquear | `PATCH /users/:id/status` |
-| Admin — resetar PIN | `PATCH /users/:id/reset-pin` |
-| Admin — editar usuário | `PATCH /users/:id` |
-| Admin — listar logs | `GET /logs?type=&from=&to=&page=&limit=` |
-| Admin — stats de logs | `GET /logs/stats` |
-| Admin — configurações | `GET /settings` / `PATCH /settings` |
-| Admin — especialidades CRUD | `GET/POST/PATCH/DELETE /specialties` |
-| Admin — locais CRUD | `GET/POST/PATCH/DELETE /locations` |
+| Painel — carregar agendamentos do mês | `GET /agendamentos/calendario?mes=&ano=` |
+| Painel — abrir modal de data | `GET /agendamentos?mes=&ano=` |
+| Criar agendamento | `POST /agendamentos` |
+| Editar agendamento | `PATCH /agendamentos/:id` |
+| Cancelar agendamento | `DELETE /agendamentos/:id` |
+| Listar especialidades (select) | `GET /especialidades` |
+| Listar localizações (select) | `GET /localizacoes` |
+| Listar dependentes (select) | `GET /dependentes` |
+| Criar dependente | `POST /dependentes` |
+| Deletar dependente | `DELETE /dependentes/:id` |
+| Admin — estatísticas | `GET /painel/estatisticas` |
+| Admin — gráfico | `GET /painel/grafico` |
+| Admin — listar usuários | `GET /usuarios?busca=&status=&pagina=&limite=` |
+| Admin — estatísticas de usuários | `GET /usuarios/estatisticas` |
+| Admin — bloquear/desbloquear | `PATCH /usuarios/:id/status` |
+| Admin — redefinir PIN | `PATCH /usuarios/:id/redefinir-pin` |
+| Admin — editar usuário | `PATCH /usuarios/:id` |
+| Admin — listar logs | `GET /logs?tipo=&de=&ate=&pagina=&limite=` |
+| Admin — estatísticas de logs | `GET /logs/estatisticas` |
+| Admin — configurações | `GET /configuracoes` / `PATCH /configuracoes` |
+| Admin — especialidades CRUD | `GET/POST/PATCH/DELETE /especialidades` |
+| Admin — localizações CRUD | `GET/POST/PATCH/DELETE /localizacoes` |
