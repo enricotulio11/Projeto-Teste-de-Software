@@ -4,6 +4,7 @@ import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { UsuariosModule } from './usuarios/usuarios.module.js';
 import { AutenticacaoModule } from './autenticacao/autenticacao.module.js';
+import { LogsModule } from './logs/logs.module.js';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AutenticacaoModule } from './autenticacao/autenticacao.module.js';
     }),
     UsuariosModule,
     AutenticacaoModule,
+    LogsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
