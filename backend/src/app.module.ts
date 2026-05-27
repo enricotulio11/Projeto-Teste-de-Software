@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
-import { LogsModule } from './logs/logs.module.js';
 import { UsuariosModule } from './usuarios/usuarios.module.js';
 import { AutenticacaoModule } from './autenticacao/autenticacao.module.js';
 
@@ -14,7 +13,6 @@ import { AutenticacaoModule } from './autenticacao/autenticacao.module.js';
       autoLoadEntities: true,
       synchronize: true,
     }),
-    LogsModule,
     UsuariosModule,
     AutenticacaoModule,
   ],
