@@ -27,7 +27,9 @@ export class Dependente {
   @UpdateDateColumn()
   atualizadoEm: Date;
 
-  @ManyToOne(() => Usuario, (usuario) => usuario.dependentes, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Usuario, (usuario) => usuario.dependentes, {
+    onDelete: 'CASCADE',
+  })
   usuario: Usuario;
 
   @Column()

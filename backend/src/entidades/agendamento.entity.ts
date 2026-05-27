@@ -28,16 +28,21 @@ export class Agendamento {
   @UpdateDateColumn()
   atualizadoEm: Date;
 
-  @ManyToOne(() => Usuario, (usuario) => usuario.agendamentos, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Usuario, (usuario) => usuario.agendamentos, {
+    onDelete: 'CASCADE',
+  })
   usuario: Usuario;
 
   @Column()
   usuarioId: string;
 
-  @ManyToOne(() => Dependente, (dep) => dep.agendamentos, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => Dependente, (dep) => dep.agendamentos, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   dependente: Dependente | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   dependenteId: string | null;
 
   @Column()

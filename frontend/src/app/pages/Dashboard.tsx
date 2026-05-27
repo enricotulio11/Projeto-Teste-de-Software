@@ -7,13 +7,7 @@ import { AppointmentModal } from '../components/AppointmentModal';
 import { ZoomControl } from '../components/ZoomControl';
 import { useAuth } from '../contexts/AuthContext';
 import { Appointment } from '../types';
-import { 
-  getAppointments, 
-  getAppointmentByDate, 
-  saveAppointment, 
-  updateAppointment,
-  deleteAppointment 
-} from '../utils/storage';
+import { appointmentsApi } from '../services/api';
 import { toast } from 'sonner';
 
 export function Dashboard() {
@@ -31,13 +25,16 @@ export function Dashboard() {
       navigate('/login');
       return;
     }
-    loadAppointments();
+    void loadAppointments();
   }, [currentUser, navigate]);
 
-  const loadAppointments = () => {
+  const loadAppointments = async () => {
     if (currentUser) {
-      const apps = getAppointments(currentUser.id);
-      setAppointments(apps);
+      try {
+        setAppointments(await appointmentsApi.list());
+      } catch {
+        toast.error('Nao foi possivel carregar as consultas.');
+      }
     }
   };
 
@@ -47,7 +44,7 @@ export function Dashboard() {
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     
     if (currentUser) {
-      const dateAppointments = getAppointmentByDate(currentUser.id, date);
+      const dateAppointments = appointments.filter((appointment) => appointment.date === date);
       
       if (dateAppointments.length > 0) {
         // Mostra a primeira consulta da data
@@ -66,39 +63,44 @@ export function Dashboard() {
     }
   };
 
-  const handleSaveAppointment = (appointmentData: Partial<Appointment>) => {
+  const handleSaveAppointment = async (appointmentData: Partial<Appointment>) => {
     if (!currentUser || !selectedDate) return;
 
-    if (selectedAppointment) {
-      // Editar consulta existente
-      updateAppointment(selectedAppointment.id, appointmentData);
-      toast.success('Consulta atualizada com sucesso!');
-    } else {
-      // Criar nova consulta
-      const newAppointment: Appointment = {
-        id: crypto.randomUUID(),
-        userId: currentUser.id,
+    try {
+      const payload = {
         date: selectedDate,
-        createdAt: new Date().toISOString(),
-        ...appointmentData,
-      } as Appointment;
-      
-      saveAppointment(newAppointment);
-      toast.success('Consulta marcada com sucesso!');
+        time: appointmentData.time!,
+        patientId: appointmentData.patientId!,
+        specialtyId: appointmentData.specialtyId!,
+        locationId: appointmentData.locationId!,
+      };
+      if (selectedAppointment) {
+        await appointmentsApi.update(selectedAppointment.id, payload);
+        toast.success('Consulta atualizada com sucesso!');
+      } else {
+        await appointmentsApi.create(payload);
+        toast.success('Consulta marcada com sucesso!');
+      }
+
+      await loadAppointments();
+      setIsModalOpen(false);
+    } catch {
+      toast.error('Nao foi possivel salvar a consulta.');
     }
-    
-    loadAppointments();
-    setIsModalOpen(false);
   };
 
-  const handleDeleteAppointment = () => {
+  const handleDeleteAppointment = async () => {
     if (!selectedAppointment) return;
     
     if (window.confirm('Tem certeza que deseja desmarcar esta consulta?')) {
-      deleteAppointment(selectedAppointment.id);
-      toast.success('Consulta desmarcada com sucesso!');
-      loadAppointments();
-      setIsModalOpen(false);
+      try {
+        await appointmentsApi.remove(selectedAppointment.id);
+        toast.success('Consulta desmarcada com sucesso!');
+        await loadAppointments();
+        setIsModalOpen(false);
+      } catch {
+        toast.error('Nao foi possivel desmarcar a consulta.');
+      }
     }
   };
 

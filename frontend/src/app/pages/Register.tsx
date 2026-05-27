@@ -54,7 +54,7 @@ export function Register() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
 
@@ -96,9 +96,9 @@ export function Register() {
       return;
     }
 
-    const success = register(name, cpf, password, pin);
+    const user = await register(name, cpf, password, pin);
     
-    if (success) {
+    if (user) {
       navigate('/dashboard');
     } else {
       setErrors({ general: 'CPF já cadastrado ou erro ao criar conta' });

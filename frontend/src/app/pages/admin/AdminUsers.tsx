@@ -4,8 +4,8 @@ import { Search, KeyRound, Edit, Ban, Check, X, UserCheck, User as UserIcon } fr
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { AdminLayout } from '../../components/AdminLayout';
 import { useAuth } from '../../contexts/AuthContext';
-import { getUsers, getAllDependents, saveUser } from '../../utils/storage';
-import { User, Dependent } from '../../types';
+import { adminApi } from '../../services/api';
+import { AdminPerson } from '../../types';
 import { formatCPF } from '../../utils/validation';
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
@@ -30,18 +30,12 @@ import {
 } from '../../components/ui/alert-dialog';
 import { toast } from 'sonner';
 
-type UserWithType = (User | Dependent) & { 
-  type: 'Responsável' | 'Dependente';
-  status: 'active' | 'inactive';
-  userId?: string;
-};
-
 export function AdminUsers() {
   const navigate = useNavigate();
   const { currentUser, isAdmin } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
-  const [users, setUsers] = useState<UserWithType[]>([]);
-  const [selectedUser, setSelectedUser] = useState<UserWithType | null>(null);
+  const [users, setUsers] = useState<AdminPerson[]>([]);
+  const [selectedUser, setSelectedUser] = useState<AdminPerson | null>(null);
   const [actionType, setActionType] = useState<'reset' | 'block' | 'edit' | null>(null);
   const [showDialog, setShowDialog] = useState(false);
 
@@ -50,31 +44,11 @@ export function AdminUsers() {
       navigate('/login');
       return;
     }
-    loadData();
+    void loadData();
   }, [currentUser, isAdmin, navigate]);
 
-  const loadData = () => {
-    const allUsers = getUsers();
-    const allDependents = getAllDependents();
-
-    // Combinar usuários e dependentes
-    const combined: UserWithType[] = [
-      ...allUsers.map(u => ({
-        ...u,
-        type: 'Responsável' as const,
-        status: (u.status || 'active') as 'active' | 'inactive',
-      })),
-      ...allDependents.map(d => ({
-        ...d,
-        type: 'Dependente' as const,
-        status: 'active' as const,
-        password: '',
-        pin: '',
-        isAdmin: false,
-      })),
-    ];
-
-    setUsers(combined);
+  const loadData = async () => {
+    setUsers(await adminApi.users());
   };
 
   const filteredUsers = users.filter(user => 
@@ -82,46 +56,43 @@ export function AdminUsers() {
     user.cpf.includes(searchTerm.replace(/\D/g, ''))
   );
 
-  const handleResetPin = (user: UserWithType) => {
+  const handleResetPin = (user: AdminPerson) => {
     setSelectedUser(user);
     setActionType('reset');
     setShowDialog(true);
   };
 
-  const handleBlockUser = (user: UserWithType) => {
+  const handleBlockUser = (user: AdminPerson) => {
     setSelectedUser(user);
     setActionType('block');
     setShowDialog(true);
   };
 
-  const handleEditUser = (user: UserWithType) => {
+  const handleEditUser = (user: AdminPerson) => {
     toast.info('Funcionalidade de edição em desenvolvimento');
   };
 
-  const confirmAction = () => {
+  const confirmAction = async () => {
     if (!selectedUser) return;
 
     if (actionType === 'reset') {
       // Resetar PIN
       if (selectedUser.type === 'Responsável') {
-        const newPin = Math.floor(1000 + Math.random() * 9000).toString();
-        const updatedUser = { ...selectedUser, pin: newPin };
-        saveUser(updatedUser as User);
+        const { pin: newPin } = await adminApi.resetUserPin(selectedUser.id);
         toast.success(`PIN resetado para: ${newPin}`, {
           description: 'O usuário deve anotar o novo PIN',
         });
-        loadData();
+        await loadData();
       }
     } else if (actionType === 'block') {
       // Bloquear/Desbloquear usuário
       if (selectedUser.type === 'Responsável') {
         const newStatus = selectedUser.status === 'active' ? 'inactive' : 'active';
-        const updatedUser = { ...selectedUser, status: newStatus };
-        saveUser(updatedUser as User);
+        await adminApi.updateUserStatus(selectedUser.id, newStatus);
         toast.success(
           newStatus === 'inactive' ? 'Usuário bloqueado com sucesso' : 'Usuário desbloqueado com sucesso'
         );
-        loadData();
+        await loadData();
       }
     }
 

@@ -4,6 +4,8 @@ import { Settings as SettingsIcon, Database, Bell, Shield, Globe, Save } from 'l
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { AdminLayout } from '../../components/AdminLayout';
 import { useAuth } from '../../contexts/AuthContext';
+import { adminApi } from '../../services/api';
+import { SystemSettings } from '../../types';
 import { Button } from '../../components/ui/button';
 import { Label } from '../../components/ui/label';
 import { Input } from '../../components/ui/input';
@@ -14,7 +16,7 @@ import { toast } from 'sonner';
 export function AdminSettings() {
   const navigate = useNavigate();
   const { currentUser, isAdmin } = useAuth();
-  const [settings, setSettings] = useState({
+  const [settings, setSettings] = useState<SystemSettings>({
     systemName: 'MedAgenda',
     maintenanceMode: false,
     allowRegistrations: true,
@@ -30,11 +32,16 @@ export function AdminSettings() {
       navigate('/login');
       return;
     }
+    void adminApi.settings().then(setSettings);
   }, [currentUser, isAdmin, navigate]);
 
-  const handleSave = () => {
-    // Salvar configurações
-    toast.success('Configurações salvas com sucesso!');
+  const handleSave = async () => {
+    try {
+      setSettings(await adminApi.updateSettings(settings));
+      toast.success('Configurações salvas com sucesso!');
+    } catch {
+      toast.error('Nao foi possivel salvar as configuracoes.');
+    }
   };
 
   const handleReset = () => {

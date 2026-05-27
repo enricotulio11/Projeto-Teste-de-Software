@@ -10,7 +10,7 @@ import { formatCPF } from '../utils/validation';
 
 export function Login() {
   const navigate = useNavigate();
-  const { login, isAdmin } = useAuth();
+  const { login } = useAuth();
   const [cpf, setCpf] = useState('');
   const [password, setPassword] = useState('');
   const [pin, setPin] = useState('');
@@ -37,7 +37,7 @@ export function Login() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -61,14 +61,10 @@ export function Login() {
       return;
     }
 
-    // Verifica se é login de administrador
-    const isAdminLogin = cpf === '00000000000' && password === '111111' && pin === '2222';
+    const user = await login(cpf, password, pin);
 
-    const success = login(cpf, password, pin);
-
-    if (success) {
-      // Redireciona para admin ou dashboard normal
-      if (isAdminLogin) {
+    if (user) {
+      if (user.isAdmin) {
         navigate('/admin');
       } else {
         navigate('/dashboard');

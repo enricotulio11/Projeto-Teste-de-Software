@@ -4,18 +4,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Appointment, Dependent } from '../types';
-import { SPECIALTIES, CITIES, AVAILABLE_HOURS } from '../utils/constants';
+import { Appointment, Dependent, Location, Specialty } from '../types';
+import { AVAILABLE_HOURS } from '../utils/constants';
 import { useAuth } from '../contexts/AuthContext';
-import { getDependents } from '../utils/storage';
+import { catalogsApi, dependentsApi } from '../services/api';
 
 interface AppointmentModalProps {
   isOpen: boolean;
   onClose: () => void;
   date: string;
   appointment: Appointment | null;
-  onSave: (appointment: Partial<Appointment>) => void;
-  onDelete?: () => void;
+  onSave: (appointment: Partial<Appointment>) => void | Promise<void>;
+  onDelete?: () => void | Promise<void>;
 }
 
 export function AppointmentModal({
@@ -28,22 +28,33 @@ export function AppointmentModal({
 }: AppointmentModalProps) {
   const { currentUser } = useAuth();
   const [dependents, setDependents] = useState<Dependent[]>([]);
+  const [specialties, setSpecialties] = useState<Specialty[]>([]);
+  const [locations, setLocations] = useState<Location[]>([]);
   const [isEditing, setIsEditing] = useState(false);
 
   const [formData, setFormData] = useState({
     patientId: '',
     patientName: '',
     time: '',
+    locationId: '',
     location: '',
+    specialtyId: '',
     specialty: '',
   });
 
   useEffect(() => {
-    if (currentUser) {
-      const deps = getDependents(currentUser.id);
-      setDependents(deps);
+    if (currentUser && isOpen) {
+      Promise.all([
+        dependentsApi.list(),
+        catalogsApi.specialties(),
+        catalogsApi.locations(),
+      ]).then(([deps, specialtyData, locationData]) => {
+        setDependents(deps);
+        setSpecialties(specialtyData);
+        setLocations(locationData);
+      });
     }
-  }, [currentUser]);
+  }, [currentUser, isOpen]);
 
   useEffect(() => {
     if (appointment) {
@@ -51,7 +62,9 @@ export function AppointmentModal({
         patientId: appointment.patientId,
         patientName: appointment.patientName,
         time: appointment.time,
+        locationId: appointment.locationId,
         location: appointment.location,
+        specialtyId: appointment.specialtyId,
         specialty: appointment.specialty,
       });
       setIsEditing(false);
@@ -60,7 +73,9 @@ export function AppointmentModal({
         patientId: '',
         patientName: '',
         time: '',
+        locationId: '',
         location: '',
+        specialtyId: '',
         specialty: '',
       });
       setIsEditing(true);
@@ -86,14 +101,32 @@ export function AppointmentModal({
     }
   };
 
-  const handleSubmit = () => {
+  const handleLocationChange = (value: string) => {
+    const location = locations.find((item) => item.id === value);
+    setFormData((previous) => ({
+      ...previous,
+      locationId: value,
+      location: location?.displayName ?? '',
+    }));
+  };
+
+  const handleSpecialtyChange = (value: string) => {
+    const specialty = specialties.find((item) => item.id === value);
+    setFormData((previous) => ({
+      ...previous,
+      specialtyId: value,
+      specialty: specialty?.name ?? '',
+    }));
+  };
+
+  const handleSubmit = async () => {
     // Validação RdN04 - Composição Mínima de Agendamento
-    if (!formData.patientId || !formData.location || !formData.specialty || !formData.time) {
+    if (!formData.patientId || !formData.locationId || !formData.specialtyId || !formData.time) {
       alert('Preencha todos os campos obrigatórios!');
       return;
     }
 
-    onSave(formData);
+    await onSave(formData);
     onClose();
   };
 
@@ -225,14 +258,14 @@ export function AppointmentModal({
                   <MapPin className="h-5 w-5" />
                   Local *
                 </Label>
-                <Select value={formData.location} onValueChange={(value) => setFormData(prev => ({ ...prev, location: value }))}>
+                <Select value={formData.locationId} onValueChange={handleLocationChange}>
                   <SelectTrigger id="location" className="h-12 text-lg">
                     <SelectValue placeholder="Selecione a cidade" />
                   </SelectTrigger>
                   <SelectContent>
-                    {CITIES.map(city => (
-                      <SelectItem key={city} value={city} className="text-lg">
-                        {city}
+                    {locations.map(location => (
+                      <SelectItem key={location.id} value={location.id} className="text-lg">
+                        {location.displayName}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -244,14 +277,14 @@ export function AppointmentModal({
                   <Stethoscope className="h-5 w-5" />
                   Especialidade *
                 </Label>
-                <Select value={formData.specialty} onValueChange={(value) => setFormData(prev => ({ ...prev, specialty: value }))}>
+                <Select value={formData.specialtyId} onValueChange={handleSpecialtyChange}>
                   <SelectTrigger id="specialty" className="h-12 text-lg">
                     <SelectValue placeholder="Selecione a especialidade" />
                   </SelectTrigger>
                   <SelectContent>
-                    {SPECIALTIES.map(specialty => (
-                      <SelectItem key={specialty} value={specialty} className="text-lg">
-                        {specialty}
+                    {specialties.map(specialty => (
+                      <SelectItem key={specialty.id} value={specialty.id} className="text-lg">
+                        {specialty.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

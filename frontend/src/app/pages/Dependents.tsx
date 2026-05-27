@@ -7,7 +7,7 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { useAuth } from '../contexts/AuthContext';
 import { Dependent } from '../types';
-import { getDependents, saveDependent, deleteDependent } from '../utils/storage';
+import { dependentsApi } from '../services/api';
 import { validateCPF, validateName, formatCPF } from '../utils/validation';
 import { toast } from 'sonner';
 
@@ -25,13 +25,16 @@ export function Dependents() {
       navigate('/login');
       return;
     }
-    loadDependents();
+    void loadDependents();
   }, [currentUser, navigate]);
 
-  const loadDependents = () => {
+  const loadDependents = async () => {
     if (currentUser) {
-      const deps = getDependents(currentUser.id);
-      setDependents(deps);
+      try {
+        setDependents(await dependentsApi.list());
+      } catch {
+        toast.error('Nao foi possivel carregar os dependentes.');
+      }
     }
   };
 
@@ -42,7 +45,7 @@ export function Dependents() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
 
@@ -72,30 +75,28 @@ export function Dependents() {
 
     if (!currentUser) return;
 
-    const newDependent: Dependent = {
-      id: crypto.randomUUID(),
-      userId: currentUser.id,
-      name: name.trim(),
-      cpf,
-      createdAt: new Date().toISOString(),
-    };
-
-    saveDependent(newDependent);
-    toast.success(`Dependente ${name} cadastrado com sucesso!`);
-    
-    // Limpar formulário
-    setName('');
-    setCpf('');
-    setErrors({});
-    setIsAdding(false);
-    loadDependents();
+    try {
+      await dependentsApi.create(name.trim(), cpf);
+      toast.success(`Dependente ${name} cadastrado com sucesso!`);
+      setName('');
+      setCpf('');
+      setErrors({});
+      setIsAdding(false);
+      await loadDependents();
+    } catch {
+      setErrors({ general: 'Nao foi possivel cadastrar o dependente.' });
+    }
   };
 
-  const handleDelete = (dependent: Dependent) => {
+  const handleDelete = async (dependent: Dependent) => {
     if (window.confirm(`Tem certeza que deseja remover ${dependent.name} da lista de dependentes?`)) {
-      deleteDependent(dependent.id);
-      toast.success('Dependente removido com sucesso!');
-      loadDependents();
+      try {
+        await dependentsApi.remove(dependent.id);
+        toast.success('Dependente removido com sucesso!');
+        await loadDependents();
+      } catch {
+        toast.error('Nao foi possivel remover o dependente.');
+      }
     }
   };
 
@@ -175,6 +176,9 @@ export function Dependents() {
                   <p className="text-sm text-gray-500">CPF válido do dependente</p>
                   {errors.cpf && (
                     <p className="text-sm text-red-600">{errors.cpf}</p>
+                  )}
+                  {errors.general && (
+                    <p className="text-sm text-red-600">{errors.general}</p>
                   )}
                 </div>
 

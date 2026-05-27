@@ -30,21 +30,24 @@ export class Log {
   @Column()
   tipo: TipoLog;
 
-  @Column({ nullable: true })
-  cpfUsuario: string;
-
-  @Column({ nullable: true })
-  enderecoIp: string;
+  @Column({ type: 'text', nullable: true })
+  cpfUsuario: string | null;
 
   @Column({ type: 'text', nullable: true })
-  detalhes: string;
+  enderecoIp: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  detalhes: string | null;
 
   @CreateDateColumn()
   criadoEm: Date;
 
-  @ManyToOne(() => Usuario, (usuario) => usuario.logs, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => Usuario, (usuario) => usuario.logs, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   usuario: Usuario | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   usuarioId: string | null;
 }

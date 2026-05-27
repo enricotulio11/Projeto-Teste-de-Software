@@ -4,6 +4,8 @@ import { Shield, AlertCircle, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { AdminLayout } from '../../components/AdminLayout';
 import { useAuth } from '../../contexts/AuthContext';
+import { adminApi } from '../../services/api';
+import { SecurityLog } from '../../types';
 import { Badge } from '../../components/ui/badge';
 import {
   Table,
@@ -13,16 +15,6 @@ import {
   TableHeader,
   TableRow,
 } from '../../components/ui/table';
-
-interface SecurityLog {
-  id: string;
-  type: 'login' | 'logout' | 'failed_login' | 'password_reset' | 'user_blocked' | 'user_created';
-  user: string;
-  cpf: string;
-  timestamp: string;
-  ipAddress: string;
-  details: string;
-}
 
 export function AdminLogs() {
   const navigate = useNavigate();
@@ -34,60 +26,11 @@ export function AdminLogs() {
       navigate('/login');
       return;
     }
-    loadLogs();
+    void loadLogs();
   }, [currentUser, isAdmin, navigate]);
 
-  const loadLogs = () => {
-    // Simular logs de segurança
-    const mockLogs: SecurityLog[] = [
-      {
-        id: '1',
-        type: 'login',
-        user: 'Administrador',
-        cpf: '000.000.000-00',
-        timestamp: new Date().toISOString(),
-        ipAddress: '192.168.1.1',
-        details: 'Login realizado com sucesso',
-      },
-      {
-        id: '2',
-        type: 'failed_login',
-        user: 'João Silva',
-        cpf: '123.456.789-00',
-        timestamp: new Date(Date.now() - 3600000).toISOString(),
-        ipAddress: '192.168.1.105',
-        details: 'Tentativa de login com senha incorreta',
-      },
-      {
-        id: '3',
-        type: 'user_created',
-        user: 'Maria Santos',
-        cpf: '987.654.321-00',
-        timestamp: new Date(Date.now() - 7200000).toISOString(),
-        ipAddress: '192.168.1.50',
-        details: 'Novo usuário cadastrado no sistema',
-      },
-      {
-        id: '4',
-        type: 'password_reset',
-        user: 'Pedro Costa',
-        cpf: '111.222.333-44',
-        timestamp: new Date(Date.now() - 10800000).toISOString(),
-        ipAddress: '192.168.1.75',
-        details: 'PIN de segurança resetado pelo administrador',
-      },
-      {
-        id: '5',
-        type: 'logout',
-        user: 'Ana Paula',
-        cpf: '555.666.777-88',
-        timestamp: new Date(Date.now() - 14400000).toISOString(),
-        ipAddress: '192.168.1.90',
-        details: 'Logout realizado',
-      },
-    ];
-
-    setLogs(mockLogs);
+  const loadLogs = async () => {
+    setLogs(await adminApi.logs());
   };
 
   const getLogIcon = (type: SecurityLog['type']) => {

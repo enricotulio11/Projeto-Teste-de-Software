@@ -4,8 +4,7 @@ import { Users, UserCheck, Calendar, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { AdminLayout } from '../../components/AdminLayout';
 import { useAuth } from '../../contexts/AuthContext';
-import { getUsers, getAllDependents } from '../../utils/storage';
-import { Appointment } from '../../types';
+import { adminApi } from '../../services/api';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface DashboardStats {
@@ -31,55 +30,13 @@ export function AdminDashboard() {
       navigate('/login');
       return;
     }
-    loadData();
+    void loadData();
   }, [currentUser, isAdmin, navigate]);
 
-  const loadData = () => {
-    // Carregar usuários e dependentes
-    const users = getUsers();
-    const dependents = getAllDependents();
-
-    // Carregar consultas
-    const appointmentsData = localStorage.getItem('medagenda_appointments');
-    const appointments: Appointment[] = appointmentsData ? JSON.parse(appointmentsData) : [];
-
-    // Calcular consultas deste mês
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    const consultasEsteMes = appointments.filter(app => {
-      const appDate = new Date(app.date);
-      return appDate.getMonth() === currentMonth && appDate.getFullYear() === currentYear;
-    }).length;
-
-    // Calcular alertas (usuários inativos por exemplo)
-    const alertasSistema = 0; // Pode ser expandido com lógica real
-
-    setStats({
-      totalResponsaveis: users.length,
-      totalDependentes: dependents.length,
-      consultasEsteMes,
-      alertasSistema,
-    });
-
-    // Gerar dados do gráfico (últimos 7 dias)
-    const last7Days = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (6 - i));
-      return date;
-    });
-
-    const chartData = last7Days.map(date => {
-      const dateStr = date.toISOString().split('T')[0];
-      const count = appointments.filter(app => app.date === dateStr).length;
-      
-      return {
-        day: date.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }),
-        agendamentos: count,
-      };
-    });
-
-    setChartData(chartData);
+  const loadData = async () => {
+    const data = await adminApi.dashboard();
+    setStats(data.stats);
+    setChartData(data.chartData);
   };
 
   const statCards = [
