@@ -1,9 +1,23 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AppController } from './app.controller.js';
+import { AppService } from './app.service.js';
+import { LogsModule } from './logs/logs.module.js';
+import { UsuariosModule } from './usuarios/usuarios.module.js';
+import { AutenticacaoModule } from './autenticacao/autenticacao.module.js';
 
 @Module({
-  imports: [],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'better-sqlite3',
+      database: 'medagenda.sqlite',
+      autoLoadEntities: true,
+      synchronize: true,
+    }),
+    LogsModule,
+    UsuariosModule,
+    AutenticacaoModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
