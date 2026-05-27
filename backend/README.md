@@ -6,18 +6,20 @@ Stack: **NestJS + TypeORM + SQLite + JWT**
 
 ## Ordem de Implementação dos Módulos
 
+Cada módulo é implementado por completo antes de passar para o próximo:
+`entity` → `module` → `service` → `controller` → `dto/`
+
 | # | Módulo | Motivo |
 |---|--------|--------|
-| 1 | **Entidades** | Base de tudo; todos os módulos dependem delas |
-| 2 | **Logs** | Injetado internamente pelos outros módulos |
-| 3 | **Configurações** | Usado por Autenticação (registros habilitados) e Dependentes (limite) |
-| 4 | **Autenticação** | Login, registro e JWT; obrigatório para os demais |
-| 5 | **Usuários** | Gestão admin de responsáveis |
-| 6 | **Dependentes** | Depende de Usuários e Configurações |
-| 7 | **Especialidades** | Tabela de apoio para Agendamentos |
-| 8 | **Localizações** | Tabela de apoio para Agendamentos |
-| 9 | **Agendamentos** | Depende de Especialidades, Localizações e Dependentes |
-| 10 | **Painel** | Consolidado final; depende de tudo |
+| 1 | **Logs** | Injetado internamente pelos outros módulos; sem dependências externas |
+| 2 | **Configurações** | Usado por Autenticação (registros habilitados) e Dependentes (limite) |
+| 3 | **Especialidades** | Tabela de apoio para Agendamentos; sem dependências |
+| 4 | **Localizações** | Tabela de apoio para Agendamentos; sem dependências |
+| 5 | **Usuários** | Gestão de responsáveis; depende de Logs |
+| 6 | **Autenticação** | Login, registro e JWT; depende de Usuários, Configurações e Logs |
+| 7 | **Dependentes** | Depende de Usuários, Configurações e Logs |
+| 8 | **Agendamentos** | Depende de Especialidades, Localizações, Dependentes e Logs |
+| 9 | **Painel** | Consolidado final; depende de tudo |
 
 ---
 
@@ -28,6 +30,47 @@ medagenda-api/
 ├── src/
 │   ├── main.ts
 │   ├── app.module.ts
+│   │
+│   ├── logs/
+│   │   ├── log.entity.ts
+│   │   ├── logs.module.ts
+│   │   ├── logs.controller.ts
+│   │   └── logs.service.ts
+│   │
+│   ├── configuracoes/
+│   │   ├── configuracoes-sistema.entity.ts
+│   │   ├── configuracoes.module.ts
+│   │   ├── configuracoes.controller.ts
+│   │   ├── configuracoes.service.ts
+│   │   └── dto/
+│   │       └── atualizar-configuracoes.dto.ts
+│   │
+│   ├── especialidades/
+│   │   ├── especialidade.entity.ts
+│   │   ├── especialidades.module.ts
+│   │   ├── especialidades.controller.ts
+│   │   ├── especialidades.service.ts
+│   │   └── dto/
+│   │       ├── criar-especialidade.dto.ts
+│   │       └── atualizar-especialidade.dto.ts
+│   │
+│   ├── localizacoes/
+│   │   ├── localizacao.entity.ts
+│   │   ├── localizacoes.module.ts
+│   │   ├── localizacoes.controller.ts
+│   │   ├── localizacoes.service.ts
+│   │   └── dto/
+│   │       ├── criar-localizacao.dto.ts
+│   │       └── atualizar-localizacao.dto.ts
+│   │
+│   ├── usuarios/
+│   │   ├── usuario.entity.ts
+│   │   ├── usuarios.module.ts
+│   │   ├── usuarios.controller.ts
+│   │   ├── usuarios.service.ts
+│   │   └── dto/
+│   │       ├── atualizar-usuario.dto.ts
+│   │       └── atualizar-status.dto.ts
 │   │
 │   ├── autenticacao/
 │   │   ├── autenticacao.module.ts
@@ -45,15 +88,8 @@ medagenda-api/
 │   │       ├── login.dto.ts
 │   │       └── cadastro.dto.ts
 │   │
-│   ├── usuarios/
-│   │   ├── usuarios.module.ts
-│   │   ├── usuarios.controller.ts
-│   │   ├── usuarios.service.ts
-│   │   └── dto/
-│   │       ├── atualizar-usuario.dto.ts
-│   │       └── atualizar-status.dto.ts
-│   │
 │   ├── dependentes/
+│   │   ├── dependente.entity.ts
 │   │   ├── dependentes.module.ts
 │   │   ├── dependentes.controller.ts
 │   │   ├── dependentes.service.ts
@@ -62,6 +98,7 @@ medagenda-api/
 │   │       └── atualizar-dependente.dto.ts
 │   │
 │   ├── agendamentos/
+│   │   ├── agendamento.entity.ts
 │   │   ├── agendamentos.module.ts
 │   │   ├── agendamentos.controller.ts
 │   │   ├── agendamentos.service.ts
@@ -69,47 +106,10 @@ medagenda-api/
 │   │       ├── criar-agendamento.dto.ts
 │   │       └── atualizar-agendamento.dto.ts
 │   │
-│   ├── especialidades/
-│   │   ├── especialidades.module.ts
-│   │   ├── especialidades.controller.ts
-│   │   ├── especialidades.service.ts
-│   │   └── dto/
-│   │       ├── criar-especialidade.dto.ts
-│   │       └── atualizar-especialidade.dto.ts
-│   │
-│   ├── localizacoes/
-│   │   ├── localizacoes.module.ts
-│   │   ├── localizacoes.controller.ts
-│   │   ├── localizacoes.service.ts
-│   │   └── dto/
-│   │       ├── criar-localizacao.dto.ts
-│   │       └── atualizar-localizacao.dto.ts
-│   │
-│   ├── logs/
-│   │   ├── logs.module.ts
-│   │   ├── logs.controller.ts
-│   │   └── logs.service.ts
-│   │
-│   ├── configuracoes/
-│   │   ├── configuracoes.module.ts
-│   │   ├── configuracoes.controller.ts
-│   │   ├── configuracoes.service.ts
-│   │   └── dto/
-│   │       └── atualizar-configuracoes.dto.ts
-│   │
-│   ├── painel/
-│   │   ├── painel.module.ts
-│   │   ├── painel.controller.ts
-│   │   └── painel.service.ts
-│   │
-│   └── entidades/
-│       ├── usuario.entity.ts
-│       ├── dependente.entity.ts
-│       ├── agendamento.entity.ts
-│       ├── especialidade.entity.ts
-│       ├── localizacao.entity.ts
-│       ├── log.entity.ts
-│       └── configuracoes-sistema.entity.ts
+│   └── painel/
+│       ├── painel.module.ts
+│       ├── painel.controller.ts
+│       └── painel.service.ts
 │
 ├── database/
 │   └── medagenda.sqlite
