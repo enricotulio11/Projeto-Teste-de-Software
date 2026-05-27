@@ -5,7 +5,6 @@ import { AutenticacaoController } from './autenticacao.controller.js';
 import { AutenticacaoService } from './autenticacao.service.js';
 import { JwtStrategy } from './estrategias/jwt.strategy.js';
 import { UsuariosModule } from '../usuarios/usuarios.module.js';
-import { LogsModule } from '../logs/logs.module.js';
 
 @Module({
   imports: [
@@ -15,7 +14,6 @@ import { LogsModule } from '../logs/logs.module.js';
       signOptions: { expiresIn: '8h' },
     }),
     UsuariosModule,
-    LogsModule,
   ],
   controllers: [AutenticacaoController],
   providers: [AutenticacaoService, JwtStrategy],

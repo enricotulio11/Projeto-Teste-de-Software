@@ -9,14 +9,12 @@ import * as bcrypt from 'bcrypt';
 import { Usuario } from './usuario.entity.js';
 import { CriarUsuarioDto } from './dto/criar-usuario.dto.js';
 import { AtualizarUsuarioDto } from './dto/atualizar-usuario.dto.js';
-import { LogsService } from '../logs/logs.service.js';
 
 @Injectable()
 export class UsuariosService {
   constructor(
     @InjectRepository(Usuario)
     private readonly repo: Repository<Usuario>,
-    private readonly logsService: LogsService,
   ) {}
 
   buscarTodos() {
@@ -60,13 +58,6 @@ export class UsuariosService {
       papel: (dto.papel as Usuario['papel']) ?? 'paciente',
     });
     const salvo = await this.repo.save(usuario);
-
-    await this.logsService.registrar({
-      tipo: 'usuario_criado',
-      usuarioId: salvo.id,
-      cpfUsuario: salvo.cpf,
-    });
-
     const { senhaHash: _, ...rest } = salvo;
     return rest;
   }
@@ -97,11 +88,5 @@ export class UsuariosService {
 
   async bloquear(id: string): Promise<void> {
     await this.repo.update(id, { bloqueado: true });
-    const usuario = await this.repo.findOne({ where: { id } });
-    await this.logsService.registrar({
-      tipo: 'usuario_bloqueado',
-      usuarioId: id,
-      cpfUsuario: usuario?.cpf ?? undefined,
-    });
   }
 }

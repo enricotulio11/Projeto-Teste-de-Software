@@ -11,35 +11,35 @@ export type PapelUsuario = 'admin' | 'medico' | 'paciente' | 'recepcionista';
 @Entity('usuarios')
 export class Usuario {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  nome: string;
+  nome!: string;
 
   @Column({ unique: true })
-  cpf: string;
+  cpf!: string;
 
   @Column({ unique: true })
-  email: string;
+  email!: string;
 
   @Column()
-  senhaHash: string;
+  senhaHash!: string;
 
   @Column({ default: 'paciente' })
-  papel: PapelUsuario;
+  papel!: PapelUsuario;
 
   @Column({ default: true })
-  ativo: boolean;
+  ativo!: boolean;
 
   @Column({ default: false })
-  bloqueado: boolean;
+  bloqueado!: boolean;
 
   @Column({ default: 0 })
-  tentativasLogin: number;
+  tentativasLogin!: number;
 
   @CreateDateColumn()
-  criadoEm: Date;
+  criadoEm!: Date;
 
   @UpdateDateColumn()
-  atualizadoEm: Date;
+  atualizadoEm!: Date;
 }
