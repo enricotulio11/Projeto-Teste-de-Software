@@ -9,6 +9,8 @@ import { ConfiguracoesModule } from './configuracoes/configuracoes.module.js';
 import { EspecialidadesModule } from './especialidades/especialidades.module.js';
 import { LocalizacoesModule } from './localizacoes/localizacoes.module.js';
 import { DependentesModule } from './dependentes/dependentes.module.js';
+import { AgendamentosModule } from './agendamentos/agendamentos.module.js';
+import { PainelModule } from './painel/painel.module.js';
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { DependentesModule } from './dependentes/dependentes.module.js';
     EspecialidadesModule,
     LocalizacoesModule,
     DependentesModule,
+    AgendamentosModule,
+    PainelModule,
   ],
   controllers: [AppController],
   providers: [AppService],

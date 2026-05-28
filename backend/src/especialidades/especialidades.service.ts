@@ -24,6 +24,12 @@ export class EspecialidadesService {
     return this.repo.find({ order: { nome: 'ASC' } });
   }
 
+  async buscarUm(id: string): Promise<Especialidade> {
+    const especialidade = await this.repo.findOne({ where: { id } });
+    if (!especialidade) throw new NotFoundException('Especialidade não encontrada');
+    return especialidade;
+  }
+
   async criar(dto: CriarEspecialidadeDto): Promise<Especialidade> {
     const existe = await this.repo.findOne({ where: { nome: dto.nome } });
     if (existe) throw new ConflictException('Especialidade já cadastrada');

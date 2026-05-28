@@ -89,4 +89,12 @@ export class UsuariosService {
   async bloquear(id: string): Promise<void> {
     await this.repo.update(id, { bloqueado: true });
   }
+
+  contarTotal(): Promise<number> {
+    return this.repo.count();
+  }
+
+  contarAtivos(): Promise<number> {
+    return this.repo.count({ where: { ativo: true } });
+  }
 }
