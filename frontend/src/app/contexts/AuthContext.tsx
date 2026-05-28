@@ -1,20 +1,13 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, AuthContextType } from '../types';
-import { 
-  getCurrentUser, 
-  setCurrentUser, 
-  clearCurrentUser, 
-  getUserByCPF, 
-  saveUser 
-} from '../utils/storage';
-import { validateCPF, validatePassword, validatePIN, validateName } from '../utils/validation';
+import { getCurrentUser, setCurrentUser, clearCurrentUser } from '../utils/storage';
+import { apiPost, clearAccessToken, setAccessToken } from '../services/api';
+import { BackendUser, getMe, mapBackendUser } from '../services/medagenda';
 
-// Credenciais do administrador
-const ADMIN_CREDENTIALS = {
-  cpf: '00000000000',
-  password: '111111',
-  pin: '2222',
-};
+interface LoginResponse {
+  accessToken: string;
+  usuario: BackendUser;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -26,92 +19,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (user) {
       setCurrentUserState(user);
     }
+
+    getMe()
+      .then((backendUser) => {
+        const freshUser = mapBackendUser(backendUser);
+        setCurrentUser(freshUser);
+        setCurrentUserState(freshUser);
+      })
+      .catch(() => {
+        clearAccessToken();
+        clearCurrentUser();
+        setCurrentUserState(null);
+      });
   }, []);
 
-  const login = (cpf: string, password: string, pin: string): boolean => {
-    // Verifica se é login de administrador
-    if (
-      cpf === ADMIN_CREDENTIALS.cpf && 
-      password === ADMIN_CREDENTIALS.password && 
-      pin === ADMIN_CREDENTIALS.pin
-    ) {
-      const adminUser: User = {
-        id: 'admin',
-        name: 'Administrador',
-        cpf: ADMIN_CREDENTIALS.cpf,
-        password: ADMIN_CREDENTIALS.password,
-        pin: ADMIN_CREDENTIALS.pin,
-        createdAt: new Date().toISOString(),
-        isAdmin: true,
-        status: 'active',
-      };
-      setCurrentUser(adminUser);
-      setCurrentUserState(adminUser);
-      return true;
-    }
+  const login = async (cpf: string, password: string): Promise<User | null> => {
+    try {
+      const response = await apiPost<LoginResponse>(
+        '/autenticacao/login',
+        { cpf, senha: password },
+        { auth: false },
+      );
+      const user = mapBackendUser(response.usuario);
 
-    // Login normal de usuário
-    const user = getUserByCPF(cpf);
-    
-    if (!user) {
-      return false;
+      setAccessToken(response.accessToken);
+      setCurrentUser(user);
+      setCurrentUserState(user);
+
+      return user;
+    } catch {
+      return null;
     }
-    
-    if (user.password !== password || user.pin !== pin) {
-      return false;
-    }
-    
-    setCurrentUser(user);
-    setCurrentUserState(user);
-    return true;
   };
 
-  const register = (name: string, cpf: string, password: string, pin: string): boolean => {
-    // Validações conforme RdN02, RdN03, RdN06
-    if (!validateName(name)) {
-      return false;
+  const register = async (
+    name: string,
+    cpf: string,
+    email: string,
+    password: string,
+  ): Promise<User | null> => {
+    try {
+      await apiPost(
+        '/autenticacao/cadastro',
+        { nome: name, cpf, email, senha: password },
+        { auth: false },
+      );
+
+      return await login(cpf, password);
+    } catch {
+      return null;
     }
-    
-    if (!validateCPF(cpf)) {
-      return false;
-    }
-    
-    if (!validatePassword(password)) {
-      return false;
-    }
-    
-    if (!validatePIN(pin)) {
-      return false;
-    }
-    
-    // Verifica se CPF já existe (RdN06 - Unicidade)
-    if (getUserByCPF(cpf)) {
-      return false;
-    }
-    
-    const newUser: User = {
-      id: crypto.randomUUID(),
-      name,
-      cpf,
-      password,
-      pin,
-      createdAt: new Date().toISOString(),
-      status: 'active',
-    };
-    
-    saveUser(newUser);
-    setCurrentUser(newUser);
-    setCurrentUserState(newUser);
-    return true;
   };
 
   const logout = () => {
+    clearAccessToken();
     clearCurrentUser();
     setCurrentUserState(null);
   };
 
   const isAdmin = (): boolean => {
-    return currentUser?.isAdmin === true;
+    return currentUser?.role === 'admin' || currentUser?.isAdmin === true;
   };
 
   return (

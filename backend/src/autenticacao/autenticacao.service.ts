@@ -40,10 +40,19 @@ export class AutenticacaoService {
     await this.usuariosService.resetarTentativasLogin(usuario.id);
 
     const payload = { sub: usuario.id, cpf: usuario.cpf, papel: usuario.papel };
-    return { accessToken: this.jwtService.sign(payload) };
+    const { senhaHash: _, ...usuarioSemSenha } = usuario;
+
+    return {
+      accessToken: this.jwtService.sign(payload),
+      usuario: usuarioSemSenha,
+    };
   }
 
   async cadastro(dto: CadastroDto) {
     return this.usuariosService.criar({ ...dto });
+  }
+
+  perfil(usuario: { id: string }) {
+    return this.usuariosService.buscarUm(usuario.id);
   }
 }

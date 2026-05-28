@@ -1,19 +1,24 @@
-import { useState, useEffect } from 'react';
-import { X, Calendar as CalendarIcon, Clock, MapPin, Stethoscope, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import type { ComponentType } from 'react';
+import { Calendar as CalendarIcon, Clock, MapPin, Stethoscope, User } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Appointment, Dependent } from '../types';
-import { SPECIALTIES, CITIES, AVAILABLE_HOURS } from '../utils/constants';
+import { Appointment, Dependent, User as AppUser } from '../types';
+import { AVAILABLE_HOURS } from '../utils/constants';
 import { useAuth } from '../contexts/AuthContext';
-import { getDependents } from '../utils/storage';
+import { BackendLocation, BackendSpecialty } from '../services/medagenda';
 
 interface AppointmentModalProps {
   isOpen: boolean;
   onClose: () => void;
   date: string;
   appointment: Appointment | null;
+  dependents: Dependent[];
+  doctors: AppUser[];
+  specialties: BackendSpecialty[];
+  locations: BackendLocation[];
   onSave: (appointment: Partial<Appointment>) => void;
   onDelete?: () => void;
 }
@@ -23,27 +28,26 @@ export function AppointmentModal({
   onClose,
   date,
   appointment,
+  dependents,
+  doctors,
+  specialties,
+  locations,
   onSave,
   onDelete,
 }: AppointmentModalProps) {
   const { currentUser } = useAuth();
-  const [dependents, setDependents] = useState<Dependent[]>([]);
   const [isEditing, setIsEditing] = useState(false);
-
   const [formData, setFormData] = useState({
     patientId: '',
     patientName: '',
     time: '',
+    doctorId: '',
+    doctorName: '',
+    locationId: '',
     location: '',
+    specialtyId: '',
     specialty: '',
   });
-
-  useEffect(() => {
-    if (currentUser) {
-      const deps = getDependents(currentUser.id);
-      setDependents(deps);
-    }
-  }, [currentUser]);
 
   useEffect(() => {
     if (appointment) {
@@ -51,7 +55,11 @@ export function AppointmentModal({
         patientId: appointment.patientId,
         patientName: appointment.patientName,
         time: appointment.time,
+        doctorId: appointment.doctorId ?? '',
+        doctorName: appointment.doctorName ?? '',
+        locationId: appointment.locationId ?? '',
         location: appointment.location,
+        specialtyId: appointment.specialtyId ?? '',
         specialty: appointment.specialty,
       });
       setIsEditing(false);
@@ -60,12 +68,16 @@ export function AppointmentModal({
         patientId: '',
         patientName: '',
         time: '',
+        doctorId: doctors[0]?.id ?? '',
+        doctorName: doctors[0]?.name ?? '',
+        locationId: '',
         location: '',
+        specialtyId: '',
         specialty: '',
       });
       setIsEditing(true);
     }
-  }, [appointment, isOpen]);
+  }, [appointment, doctors, isOpen]);
 
   const handlePatientChange = (value: string) => {
     if (value === currentUser?.id) {
@@ -74,21 +86,27 @@ export function AppointmentModal({
         patientId: value,
         patientName: currentUser.name,
       }));
-    } else {
-      const dep = dependents.find(d => d.id === value);
-      if (dep) {
-        setFormData(prev => ({
-          ...prev,
-          patientId: value,
-          patientName: dep.name,
-        }));
-      }
+      return;
+    }
+
+    const dependent = dependents.find(item => item.id === value);
+    if (dependent) {
+      setFormData(prev => ({
+        ...prev,
+        patientId: value,
+        patientName: dependent.name,
+      }));
     }
   };
 
   const handleSubmit = () => {
-    // Validação RdN04 - Composição Mínima de Agendamento
-    if (!formData.patientId || !formData.location || !formData.specialty || !formData.time) {
+    if (
+      !formData.patientId ||
+      !formData.doctorId ||
+      !formData.locationId ||
+      !formData.specialtyId ||
+      !formData.time
+    ) {
       alert('Preencha todos os campos obrigatórios!');
       return;
     }
@@ -104,8 +122,8 @@ export function AppointmentModal({
 
   const patients = [
     { id: currentUser?.id || '', name: currentUser?.name || '' },
-    ...dependents.map(d => ({ id: d.id, name: d.name })),
-  ];
+    ...dependents.map(item => ({ id: item.id, name: item.name })),
+  ].filter(patient => patient.id);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -118,7 +136,6 @@ export function AppointmentModal({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {/* Data */}
           <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
             <div className="flex items-center gap-2">
               <CalendarIcon className="h-5 w-5 text-blue-600" />
@@ -126,52 +143,24 @@ export function AppointmentModal({
             </div>
           </div>
 
-          {/* Visualização ou Edição */}
           {appointment && !isEditing ? (
-            // Modo de visualização
             <div className="space-y-4">
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <User className="h-5 w-5 text-gray-600" />
-                  <span className="font-semibold">Paciente:</span>
-                </div>
-                <p className="text-lg ml-7">{formData.patientName}</p>
-              </div>
-
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="h-5 w-5 text-gray-600" />
-                  <span className="font-semibold">Horário:</span>
-                </div>
-                <p className="text-lg ml-7">{formData.time}</p>
-              </div>
-
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <MapPin className="h-5 w-5 text-gray-600" />
-                  <span className="font-semibold">Local:</span>
-                </div>
-                <p className="text-lg ml-7">{formData.location}</p>
-              </div>
-
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <Stethoscope className="h-5 w-5 text-gray-600" />
-                  <span className="font-semibold">Especialidade:</span>
-                </div>
-                <p className="text-lg ml-7">{formData.specialty}</p>
-              </div>
+              <Detail icon={User} label="Paciente" value={formData.patientName} />
+              <Detail icon={User} label="Médico" value={formData.doctorName || 'Não informado'} />
+              <Detail icon={Clock} label="Horário" value={formData.time} />
+              <Detail icon={MapPin} label="Local" value={formData.location} />
+              <Detail icon={Stethoscope} label="Especialidade" value={formData.specialty} />
 
               <div className="flex gap-3 pt-4">
-                <Button 
-                  onClick={() => setIsEditing(true)} 
+                <Button
+                  onClick={() => setIsEditing(true)}
                   className="flex-1 h-12 text-lg"
                   variant="outline"
                 >
                   Editar Consulta
                 </Button>
-                <Button 
-                  onClick={onDelete} 
+                <Button
+                  onClick={onDelete}
                   className="flex-1 h-12 text-lg"
                   variant="destructive"
                 >
@@ -180,7 +169,6 @@ export function AppointmentModal({
               </div>
             </div>
           ) : (
-            // Modo de edição/criação
             <div className="space-y-4">
               <div>
                 <Label htmlFor="patient" className="text-lg mb-2 flex items-center gap-2">
@@ -195,6 +183,35 @@ export function AppointmentModal({
                     {patients.map(patient => (
                       <SelectItem key={patient.id} value={patient.id} className="text-lg">
                         {patient.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="doctor" className="text-lg mb-2 flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Médico *
+                </Label>
+                <Select
+                  value={formData.doctorId}
+                  onValueChange={(value) => {
+                    const doctor = doctors.find(item => item.id === value);
+                    setFormData(prev => ({
+                      ...prev,
+                      doctorId: value,
+                      doctorName: doctor?.name ?? '',
+                    }));
+                  }}
+                >
+                  <SelectTrigger id="doctor" className="h-12 text-lg">
+                    <SelectValue placeholder="Selecione o médico" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {doctors.map(doctor => (
+                      <SelectItem key={doctor.id} value={doctor.id} className="text-lg">
+                        {doctor.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -225,14 +242,24 @@ export function AppointmentModal({
                   <MapPin className="h-5 w-5" />
                   Local *
                 </Label>
-                <Select value={formData.location} onValueChange={(value) => setFormData(prev => ({ ...prev, location: value }))}>
+                <Select
+                  value={formData.locationId}
+                  onValueChange={(value) => {
+                    const location = locations.find(item => item.id === value);
+                    setFormData(prev => ({
+                      ...prev,
+                      locationId: value,
+                      location: location ? `${location.nome} - ${location.cidade}/${location.estado}` : '',
+                    }));
+                  }}
+                >
                   <SelectTrigger id="location" className="h-12 text-lg">
-                    <SelectValue placeholder="Selecione a cidade" />
+                    <SelectValue placeholder="Selecione o local" />
                   </SelectTrigger>
                   <SelectContent>
-                    {CITIES.map(city => (
-                      <SelectItem key={city} value={city} className="text-lg">
-                        {city}
+                    {locations.map(location => (
+                      <SelectItem key={location.id} value={location.id} className="text-lg">
+                        {location.nome} - {location.cidade}/{location.estado}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -244,14 +271,24 @@ export function AppointmentModal({
                   <Stethoscope className="h-5 w-5" />
                   Especialidade *
                 </Label>
-                <Select value={formData.specialty} onValueChange={(value) => setFormData(prev => ({ ...prev, specialty: value }))}>
+                <Select
+                  value={formData.specialtyId}
+                  onValueChange={(value) => {
+                    const specialty = specialties.find(item => item.id === value);
+                    setFormData(prev => ({
+                      ...prev,
+                      specialtyId: value,
+                      specialty: specialty?.nome ?? '',
+                    }));
+                  }}
+                >
                   <SelectTrigger id="specialty" className="h-12 text-lg">
                     <SelectValue placeholder="Selecione a especialidade" />
                   </SelectTrigger>
                   <SelectContent>
-                    {SPECIALTIES.map(specialty => (
-                      <SelectItem key={specialty} value={specialty} className="text-lg">
-                        {specialty}
+                    {specialties.map(specialty => (
+                      <SelectItem key={specialty.id} value={specialty.id} className="text-lg">
+                        {specialty.nome}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -260,18 +297,15 @@ export function AppointmentModal({
 
               <div className="flex gap-3 pt-4">
                 {appointment && (
-                  <Button 
-                    onClick={() => setIsEditing(false)} 
+                  <Button
+                    onClick={() => setIsEditing(false)}
                     variant="outline"
                     className="flex-1 h-12 text-lg"
                   >
                     Cancelar
                   </Button>
                 )}
-                <Button 
-                  onClick={handleSubmit}
-                  className="flex-1 h-12 text-lg"
-                >
+                <Button onClick={handleSubmit} className="flex-1 h-12 text-lg">
                   {appointment ? 'Salvar Alterações' : 'Marcar Consulta'}
                 </Button>
               </div>
@@ -280,5 +314,25 @@ export function AppointmentModal({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function Detail({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+      <div className="flex items-center gap-2 mb-2">
+        <Icon className="h-5 w-5 text-gray-600" />
+        <span className="font-semibold">{label}:</span>
+      </div>
+      <p className="text-lg ml-7">{value}</p>
+    </div>
   );
 }

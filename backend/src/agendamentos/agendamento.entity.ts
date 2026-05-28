@@ -19,7 +19,7 @@ export class Agendamento {
   @Column()
   medicoId!: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   dependenteId!: string | null;
 
   @Column()
@@ -37,10 +37,10 @@ export class Agendamento {
   @Column({ default: 'agendado' })
   status!: StatusAgendamento;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   motivo!: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   observacoes!: string | null;
 
   @CreateDateColumn()

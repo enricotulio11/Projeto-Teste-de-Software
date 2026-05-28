@@ -22,7 +22,7 @@ export class Localizacao {
   @Column({ length: 2 })
   estado!: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   cep!: string | null;
 
   @Column({ default: true })

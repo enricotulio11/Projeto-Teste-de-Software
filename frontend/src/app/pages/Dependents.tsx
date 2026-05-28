@@ -1,15 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowLeft, UserPlus, Trash2, Users as UsersIcon } from 'lucide-react';
+import { ArrowLeft, Trash2, UserPlus, Users as UsersIcon } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { useAuth } from '../contexts/AuthContext';
 import { Dependent } from '../types';
-import { getDependents, saveDependent, deleteDependent } from '../utils/storage';
-import { validateCPF, validateName, formatCPF } from '../utils/validation';
+import { createDependent, deleteDependentById, fetchDependents } from '../services/medagenda';
+import { formatCPF, validateCPF, validateName } from '../utils/validation';
 import { toast } from 'sonner';
+
+const RELATIONSHIPS = [
+  { value: 'filho', label: 'Filho' },
+  { value: 'filha', label: 'Filha' },
+  { value: 'conjuge', label: 'Cônjuge' },
+  { value: 'pai', label: 'Pai' },
+  { value: 'mae', label: 'Mãe' },
+  { value: 'irmao', label: 'Irmão' },
+  { value: 'irma', label: 'Irmã' },
+  { value: 'outro', label: 'Outro' },
+];
 
 export function Dependents() {
   const navigate = useNavigate();
@@ -18,6 +30,8 @@ export function Dependents() {
   const [isAdding, setIsAdding] = useState(false);
   const [name, setName] = useState('');
   const [cpf, setCpf] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [relationship, setRelationship] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -28,10 +42,14 @@ export function Dependents() {
     loadDependents();
   }, [currentUser, navigate]);
 
-  const loadDependents = () => {
-    if (currentUser) {
-      const deps = getDependents(currentUser.id);
+  const loadDependents = async () => {
+    if (!currentUser) return;
+
+    try {
+      const deps = await fetchDependents(currentUser.id);
       setDependents(deps);
+    } catch {
+      toast.error('Não foi possível carregar os dependentes');
     }
   };
 
@@ -42,11 +60,10 @@ export function Dependents() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
 
-    // Validações conforme RF01
     if (!name.trim()) {
       newErrors.name = 'Nome é obrigatório';
     } else if (!validateName(name)) {
@@ -59,10 +76,16 @@ export function Dependents() {
       newErrors.cpf = 'CPF inválido';
     }
 
-    // Verifica se CPF já existe entre os dependentes
-    const existingDependent = dependents.find(d => d.cpf === cpf);
-    if (existingDependent) {
+    if (dependents.some(dependent => dependent.cpf === cpf)) {
       newErrors.cpf = 'CPF já cadastrado como dependente';
+    }
+
+    if (!dateOfBirth) {
+      newErrors.dateOfBirth = 'Data de nascimento é obrigatória';
+    }
+
+    if (!relationship) {
+      newErrors.relationship = 'Parentesco é obrigatório';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -72,36 +95,44 @@ export function Dependents() {
 
     if (!currentUser) return;
 
-    const newDependent: Dependent = {
-      id: crypto.randomUUID(),
-      userId: currentUser.id,
-      name: name.trim(),
-      cpf,
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      await createDependent({
+        userId: currentUser.id,
+        name: name.trim(),
+        cpf,
+        dateOfBirth,
+        relationship,
+      });
 
-    saveDependent(newDependent);
-    toast.success(`Dependente ${name} cadastrado com sucesso!`);
-    
-    // Limpar formulário
-    setName('');
-    setCpf('');
-    setErrors({});
-    setIsAdding(false);
-    loadDependents();
+      toast.success(`Dependente ${name} cadastrado com sucesso!`);
+      setName('');
+      setCpf('');
+      setDateOfBirth('');
+      setRelationship('');
+      setErrors({});
+      setIsAdding(false);
+      await loadDependents();
+    } catch {
+      toast.error('Não foi possível cadastrar o dependente');
+    }
   };
 
-  const handleDelete = (dependent: Dependent) => {
-    if (window.confirm(`Tem certeza que deseja remover ${dependent.name} da lista de dependentes?`)) {
-      deleteDependent(dependent.id);
+  const handleDelete = async (dependent: Dependent) => {
+    if (!window.confirm(`Tem certeza que deseja remover ${dependent.name} da lista de dependentes?`)) {
+      return;
+    }
+
+    try {
+      await deleteDependentById(dependent.id);
       toast.success('Dependente removido com sucesso!');
-      loadDependents();
+      await loadDependents();
+    } catch {
+      toast.error('Não foi possível remover o dependente');
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
-      {/* Header */}
       <header className="bg-white shadow-md border-b-2 border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -121,9 +152,7 @@ export function Dependents() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 py-8">
-        {/* Botão adicionar */}
         {!isAdding && (
           <Button
             onClick={() => setIsAdding(true)}
@@ -135,7 +164,6 @@ export function Dependents() {
           </Button>
         )}
 
-        {/* Formulário de adição */}
         {isAdding && (
           <Card className="mb-6">
             <CardHeader>
@@ -156,10 +184,7 @@ export function Dependents() {
                     onChange={(e) => setName(e.target.value)}
                     className="h-12 text-lg"
                   />
-                  <p className="text-sm text-gray-500">Apenas letras</p>
-                  {errors.name && (
-                    <p className="text-sm text-red-600">{errors.name}</p>
-                  )}
+                  {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -172,10 +197,36 @@ export function Dependents() {
                     onChange={handleCPFChange}
                     className="h-12 text-lg"
                   />
-                  <p className="text-sm text-gray-500">CPF válido do dependente</p>
-                  {errors.cpf && (
-                    <p className="text-sm text-red-600">{errors.cpf}</p>
-                  )}
+                  {errors.cpf && <p className="text-sm text-red-600">{errors.cpf}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="dateOfBirth" className="text-lg">Data de Nascimento *</Label>
+                  <Input
+                    id="dateOfBirth"
+                    type="date"
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                    className="h-12 text-lg"
+                  />
+                  {errors.dateOfBirth && <p className="text-sm text-red-600">{errors.dateOfBirth}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="relationship" className="text-lg">Parentesco *</Label>
+                  <Select value={relationship} onValueChange={setRelationship}>
+                    <SelectTrigger id="relationship" className="h-12 text-lg">
+                      <SelectValue placeholder="Selecione o parentesco" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {RELATIONSHIPS.map(item => (
+                        <SelectItem key={item.value} value={item.value} className="text-lg">
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.relationship && <p className="text-sm text-red-600">{errors.relationship}</p>}
                 </div>
 
                 <div className="flex gap-3 pt-4">
@@ -185,6 +236,8 @@ export function Dependents() {
                       setIsAdding(false);
                       setName('');
                       setCpf('');
+                      setDateOfBirth('');
+                      setRelationship('');
                       setErrors({});
                     }}
                     variant="outline"
@@ -192,10 +245,7 @@ export function Dependents() {
                   >
                     Cancelar
                   </Button>
-                  <Button
-                    type="submit"
-                    className="flex-1 h-12 text-lg"
-                  >
+                  <Button type="submit" className="flex-1 h-12 text-lg">
                     Salvar Perfil
                   </Button>
                 </div>
@@ -204,7 +254,6 @@ export function Dependents() {
           </Card>
         )}
 
-        {/* Lista de dependentes */}
         <div>
           <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
             <UsersIcon className="h-7 w-7" />
@@ -218,9 +267,6 @@ export function Dependents() {
                 <p className="text-xl text-gray-500">
                   Nenhum dependente cadastrado ainda
                 </p>
-                <p className="text-gray-400 mt-2">
-                  Clique em "Adicionar Dependente" para começar
-                </p>
               </CardContent>
             </Card>
           ) : (
@@ -232,6 +278,11 @@ export function Dependents() {
                       <div>
                         <h3 className="text-xl font-semibold mb-1">{dependent.name}</h3>
                         <p className="text-lg text-gray-600">CPF: {formatCPF(dependent.cpf)}</p>
+                        {dependent.dateOfBirth && (
+                          <p className="text-sm text-gray-500 mt-1">
+                            Nascimento: {new Date(`${dependent.dateOfBirth}T00:00:00`).toLocaleDateString('pt-BR')}
+                          </p>
+                        )}
                         <p className="text-sm text-gray-400 mt-1">
                           Cadastrado em: {new Date(dependent.createdAt).toLocaleDateString('pt-BR')}
                         </p>
@@ -252,20 +303,6 @@ export function Dependents() {
             </div>
           )}
         </div>
-
-        {/* Info sobre responsável */}
-        <Card className="mt-8 bg-blue-50 border-blue-200">
-          <CardContent className="py-6">
-            <h3 className="font-semibold text-lg mb-2">ℹ️ Informação</h3>
-            <p className="text-gray-700">
-              Você (responsável) também pode agendar consultas para si mesmo.
-              Não é necessário se cadastrar como dependente.
-            </p>
-            <p className="text-gray-700 mt-2">
-              Os dependentes cadastrados aqui aparecerão como opção ao agendar uma consulta.
-            </p>
-          </CardContent>
-        </Card>
       </main>
     </div>
   );

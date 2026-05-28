@@ -25,10 +25,10 @@ export class Log {
   @Column()
   acao!: AcaoLog;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   detalhes!: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   ip!: string | null;
 
   @CreateDateColumn()

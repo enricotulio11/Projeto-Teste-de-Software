@@ -51,7 +51,7 @@ export class AgendamentosController {
 
   @Patch(':id')
   @UseGuards(PapeisGuard)
-  @Papeis('admin', 'recepcionista', 'medico')
+  @Papeis('admin', 'recepcionista', 'medico', 'paciente')
   atualizar(@Param('id') id: string, @Body() dto: AtualizarAgendamentoDto) {
     return this.agendamentosService.atualizar(id, dto);
   }

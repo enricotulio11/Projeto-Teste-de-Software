@@ -48,7 +48,7 @@ export function formatCPF(cpf: string): string {
  * RdN02
  */
 export function validatePassword(password: string): boolean {
-  return /^[a-zA-Z0-9]{6}$/.test(password);
+  return password.length >= 6;
 }
 
 /**

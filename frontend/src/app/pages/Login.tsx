@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
-import { LogIn, KeyRound } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -10,11 +10,11 @@ import { formatCPF } from '../utils/validation';
 
 export function Login() {
   const navigate = useNavigate();
-  const { login, isAdmin } = useAuth();
+  const { login } = useAuth();
   const [cpf, setCpf] = useState('');
   const [password, setPassword] = useState('');
-  const [pin, setPin] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, '');
@@ -23,26 +23,12 @@ export function Login() {
     }
   };
 
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value.length <= 6) {
-      setPassword(value);
-    }
-  };
-
-  const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '');
-    if (value.length <= 4) {
-      setPin(value);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!cpf || !password || !pin) {
-      setError('Preencha todos os campos');
+    if (!cpf || !password) {
+      setError('Preencha CPF e senha');
       return;
     }
 
@@ -51,30 +37,19 @@ export function Login() {
       return;
     }
 
-    if (password.length !== 6) {
-      setError('Senha deve ter 6 caracteres');
+    if (password.length < 6) {
+      setError('Senha deve ter pelo menos 6 caracteres');
       return;
     }
 
-    if (pin.length !== 4) {
-      setError('PIN deve ter 4 dígitos');
-      return;
-    }
+    setIsSubmitting(true);
+    const user = await login(cpf, password);
+    setIsSubmitting(false);
 
-    // Verifica se é login de administrador
-    const isAdminLogin = cpf === '00000000000' && password === '111111' && pin === '2222';
-
-    const success = login(cpf, password, pin);
-
-    if (success) {
-      // Redireciona para admin ou dashboard normal
-      if (isAdminLogin) {
-        navigate('/admin');
-      } else {
-        navigate('/dashboard');
-      }
+    if (user) {
+      navigate(user.isAdmin ? '/admin' : '/dashboard');
     } else {
-      setError('CPF, Senha ou PIN incorretos');
+      setError('CPF ou senha incorretos');
     }
   };
 
@@ -113,32 +88,13 @@ export function Login() {
               <Input
                 id="password"
                 type="password"
-                placeholder="6 caracteres"
+                placeholder="Mínimo de 6 caracteres"
                 value={password}
-                onChange={handlePasswordChange}
+                onChange={(e) => setPassword(e.target.value)}
                 className="h-12 text-lg"
                 autoComplete="current-password"
-                maxLength={6}
               />
-              <p className="text-sm text-gray-500">6 caracteres alfanuméricos</p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="pin" className="text-lg flex items-center gap-2">
-                <KeyRound className="h-5 w-5" />
-                PIN de Segurança
-              </Label>
-              <Input
-                id="pin"
-                type="password"
-                placeholder="4 dígitos"
-                value={pin}
-                onChange={handlePinChange}
-                className="h-12 text-lg text-center tracking-widest"
-                maxLength={4}
-                autoComplete="off"
-              />
-              <p className="text-sm text-gray-500">4 números para segurança</p>
+              <p className="text-sm text-gray-500">Use a senha cadastrada na API</p>
             </div>
 
             {error && (
@@ -147,8 +103,8 @@ export function Login() {
               </div>
             )}
 
-            <Button type="submit" className="w-full h-12 text-lg" size="lg">
-              Acessar
+            <Button type="submit" className="w-full h-12 text-lg" size="lg" disabled={isSubmitting}>
+              {isSubmitting ? 'Entrando...' : 'Acessar'}
             </Button>
 
             <div className="text-center pt-4">

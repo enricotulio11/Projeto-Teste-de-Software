@@ -34,7 +34,7 @@ export class ConfiguracoesSistema {
   @Column({ default: false })
   habilitarNotificacoesEmail!: boolean;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   emailNotificacao!: string | null;
 
   @UpdateDateColumn()

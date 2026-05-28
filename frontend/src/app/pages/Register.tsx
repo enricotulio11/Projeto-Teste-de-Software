@@ -1,23 +1,23 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
-import { UserPlus, KeyRound } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { useAuth } from '../contexts/AuthContext';
-import { validateCPF, validatePassword, validatePIN, validateName, formatCPF } from '../utils/validation';
+import { validateCPF, validatePassword, validateName, formatCPF } from '../utils/validation';
 
 export function Register() {
   const navigate = useNavigate();
   const { register } = useAuth();
   const [name, setName] = useState('');
   const [cpf, setCpf] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [pin, setPin] = useState('');
-  const [confirmPin, setConfirmPin] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, '');
@@ -26,39 +26,10 @@ export function Register() {
     }
   };
 
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value.length <= 6) {
-      setPassword(value);
-    }
-  };
-
-  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value.length <= 6) {
-      setConfirmPassword(value);
-    }
-  };
-
-  const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '');
-    if (value.length <= 4) {
-      setPin(value);
-    }
-  };
-
-  const handleConfirmPinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '');
-    if (value.length <= 4) {
-      setConfirmPin(value);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
 
-    // Validações
     if (!name.trim()) {
       newErrors.name = 'Nome é obrigatório';
     } else if (!validateName(name)) {
@@ -71,24 +42,18 @@ export function Register() {
       newErrors.cpf = 'CPF inválido';
     }
 
+    if (!email.trim()) {
+      newErrors.email = 'E-mail é obrigatório';
+    }
+
     if (!password) {
       newErrors.password = 'Senha é obrigatória';
     } else if (!validatePassword(password)) {
-      newErrors.password = 'Senha deve ter exatamente 6 caracteres alfanuméricos';
+      newErrors.password = 'Senha deve ter pelo menos 6 caracteres';
     }
 
     if (password !== confirmPassword) {
       newErrors.confirmPassword = 'As senhas não coincidem';
-    }
-
-    if (!pin) {
-      newErrors.pin = 'PIN é obrigatório';
-    } else if (!validatePIN(pin)) {
-      newErrors.pin = 'PIN deve ter exatamente 4 números';
-    }
-
-    if (pin !== confirmPin) {
-      newErrors.confirmPin = 'Os PINs não coincidem';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -96,12 +61,14 @@ export function Register() {
       return;
     }
 
-    const success = register(name, cpf, password, pin);
-    
-    if (success) {
-      navigate('/dashboard');
+    setIsSubmitting(true);
+    const user = await register(name.trim(), cpf, email.trim(), password);
+    setIsSubmitting(false);
+
+    if (user) {
+      navigate(user.isAdmin ? '/admin' : '/dashboard');
     } else {
-      setErrors({ general: 'CPF já cadastrado ou erro ao criar conta' });
+      setErrors({ general: 'CPF ou e-mail já cadastrado, ou erro ao criar conta' });
     }
   };
 
@@ -130,6 +97,7 @@ export function Register() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="h-12 text-lg"
+                autoComplete="name"
               />
               {errors.name && (
                 <p className="text-sm text-red-600">{errors.name}</p>
@@ -145,9 +113,26 @@ export function Register() {
                 value={formatCPF(cpf)}
                 onChange={handleCPFChange}
                 className="h-12 text-lg"
+                autoComplete="username"
               />
               {errors.cpf && (
                 <p className="text-sm text-red-600">{errors.cpf}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-lg">E-mail</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="voce@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-12 text-lg"
+                autoComplete="email"
+              />
+              {errors.email && (
+                <p className="text-sm text-red-600">{errors.email}</p>
               )}
             </div>
 
@@ -156,13 +141,12 @@ export function Register() {
               <Input
                 id="password"
                 type="password"
-                placeholder="6 caracteres"
+                placeholder="Mínimo de 6 caracteres"
                 value={password}
-                onChange={handlePasswordChange}
+                onChange={(e) => setPassword(e.target.value)}
                 className="h-12 text-lg"
-                maxLength={6}
+                autoComplete="new-password"
               />
-              <p className="text-sm text-gray-500">6 caracteres alfanuméricos (letras e números)</p>
               {errors.password && (
                 <p className="text-sm text-red-600">{errors.password}</p>
               )}
@@ -175,48 +159,12 @@ export function Register() {
                 type="password"
                 placeholder="Repita a senha"
                 value={confirmPassword}
-                onChange={handleConfirmPasswordChange}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 className="h-12 text-lg"
-                maxLength={6}
+                autoComplete="new-password"
               />
               {errors.confirmPassword && (
                 <p className="text-sm text-red-600">{errors.confirmPassword}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="pin" className="text-lg flex items-center gap-2">
-                <KeyRound className="h-5 w-5" />
-                PIN de Segurança
-              </Label>
-              <Input
-                id="pin"
-                type="password"
-                placeholder="4 dígitos"
-                value={pin}
-                onChange={handlePinChange}
-                className="h-12 text-lg text-center tracking-widest"
-                maxLength={4}
-              />
-              <p className="text-sm text-gray-500">4 números para proteger seus dados</p>
-              {errors.pin && (
-                <p className="text-sm text-red-600">{errors.pin}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmPin" className="text-lg">Confirmar PIN</Label>
-              <Input
-                id="confirmPin"
-                type="password"
-                placeholder="Repita o PIN"
-                value={confirmPin}
-                onChange={handleConfirmPinChange}
-                className="h-12 text-lg text-center tracking-widest"
-                maxLength={4}
-              />
-              {errors.confirmPin && (
-                <p className="text-sm text-red-600">{errors.confirmPin}</p>
               )}
             </div>
 
@@ -226,8 +174,8 @@ export function Register() {
               </div>
             )}
 
-            <Button type="submit" className="w-full h-12 text-lg" size="lg">
-              Criar Conta
+            <Button type="submit" className="w-full h-12 text-lg" size="lg" disabled={isSubmitting}>
+              {isSubmitting ? 'Criando...' : 'Criar Conta'}
             </Button>
 
             <div className="text-center pt-4">

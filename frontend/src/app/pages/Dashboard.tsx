@@ -6,14 +6,18 @@ import { Calendar } from '../components/Calendar';
 import { AppointmentModal } from '../components/AppointmentModal';
 import { ZoomControl } from '../components/ZoomControl';
 import { useAuth } from '../contexts/AuthContext';
-import { Appointment } from '../types';
-import { 
-  getAppointments, 
-  getAppointmentByDate, 
-  saveAppointment, 
-  updateAppointment,
-  deleteAppointment 
-} from '../utils/storage';
+import { Appointment, Dependent, User } from '../types';
+import {
+  BackendLocation,
+  BackendSpecialty,
+  createAppointment,
+  fetchAppointmentsByPatient,
+  fetchDependents,
+  fetchDoctors,
+  fetchLocations,
+  fetchSpecialties,
+  updateAppointmentById,
+} from '../services/medagenda';
 import { toast } from 'sonner';
 
 export function Dashboard() {
@@ -22,6 +26,10 @@ export function Dashboard() {
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [dependents, setDependents] = useState<Dependent[]>([]);
+  const [doctors, setDoctors] = useState<User[]>([]);
+  const [specialties, setSpecialties] = useState<BackendSpecialty[]>([]);
+  const [locations, setLocations] = useState<BackendLocation[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -31,13 +39,35 @@ export function Dashboard() {
       navigate('/login');
       return;
     }
-    loadAppointments();
+    loadData();
   }, [currentUser, navigate]);
 
-  const loadAppointments = () => {
-    if (currentUser) {
-      const apps = getAppointments(currentUser.id);
+  const loadData = async () => {
+    if (!currentUser) return;
+
+    try {
+      const [deps, medicos, especialidades, locais] = await Promise.all([
+        fetchDependents(currentUser.id),
+        fetchDoctors(),
+        fetchSpecialties(),
+        fetchLocations(),
+      ]);
+
+      setDependents(deps);
+      setDoctors(medicos);
+      setSpecialties(especialidades);
+      setLocations(locais);
+
+      const apps = await fetchAppointmentsByPatient(currentUser.id, {
+        currentUser,
+        dependents: deps,
+        users: medicos,
+        specialties: especialidades,
+        locations: locais,
+      });
       setAppointments(apps);
+    } catch {
+      toast.error('Não foi possível carregar os dados da agenda');
     }
   };
 
@@ -47,7 +77,7 @@ export function Dashboard() {
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     
     if (currentUser) {
-      const dateAppointments = getAppointmentByDate(currentUser.id, date);
+      const dateAppointments = appointments.filter(a => a.date === date);
       
       if (dateAppointments.length > 0) {
         // Mostra a primeira consulta da data
@@ -66,39 +96,63 @@ export function Dashboard() {
     }
   };
 
-  const handleSaveAppointment = (appointmentData: Partial<Appointment>) => {
+  const handleSaveAppointment = async (appointmentData: Partial<Appointment>) => {
     if (!currentUser || !selectedDate) return;
 
-    if (selectedAppointment) {
-      // Editar consulta existente
-      updateAppointment(selectedAppointment.id, appointmentData);
-      toast.success('Consulta atualizada com sucesso!');
-    } else {
-      // Criar nova consulta
-      const newAppointment: Appointment = {
-        id: crypto.randomUUID(),
-        userId: currentUser.id,
-        date: selectedDate,
-        createdAt: new Date().toISOString(),
-        ...appointmentData,
-      } as Appointment;
-      
-      saveAppointment(newAppointment);
-      toast.success('Consulta marcada com sucesso!');
+    try {
+      const isDependent = appointmentData.patientId && appointmentData.patientId !== currentUser.id;
+      if (
+        !appointmentData.time ||
+        !appointmentData.doctorId ||
+        !appointmentData.specialtyId ||
+        !appointmentData.locationId
+      ) {
+        toast.error('Preencha todos os campos obrigatórios');
+        return;
+      }
+
+      const dateTime = `${selectedDate}T${appointmentData.time}:00`;
+
+      if (selectedAppointment) {
+        await updateAppointmentById(selectedAppointment.id, {
+          doctorId: appointmentData.doctorId,
+          dependentId: isDependent ? appointmentData.patientId ?? null : null,
+          specialtyId: appointmentData.specialtyId,
+          locationId: appointmentData.locationId,
+          dateTime,
+        });
+        toast.success('Consulta atualizada com sucesso!');
+      } else {
+        await createAppointment({
+          patientId: currentUser.id,
+          doctorId: appointmentData.doctorId ?? '',
+          dependentId: isDependent ? appointmentData.patientId ?? null : null,
+          specialtyId: appointmentData.specialtyId ?? '',
+          locationId: appointmentData.locationId ?? '',
+          dateTime,
+        });
+        toast.success('Consulta marcada com sucesso!');
+      }
+
+      await loadData();
+      setIsModalOpen(false);
+    } catch {
+      toast.error('Não foi possível salvar a consulta');
     }
-    
-    loadAppointments();
-    setIsModalOpen(false);
   };
 
-  const handleDeleteAppointment = () => {
+  const handleDeleteAppointment = async () => {
     if (!selectedAppointment) return;
     
     if (window.confirm('Tem certeza que deseja desmarcar esta consulta?')) {
-      deleteAppointment(selectedAppointment.id);
-      toast.success('Consulta desmarcada com sucesso!');
-      loadAppointments();
-      setIsModalOpen(false);
+      try {
+        await updateAppointmentById(selectedAppointment.id, { status: 'cancelado' });
+        toast.success('Consulta desmarcada com sucesso!');
+        await loadData();
+        setIsModalOpen(false);
+      } catch {
+        toast.error('Não foi possível desmarcar a consulta');
+      }
     }
   };
 
@@ -200,6 +254,10 @@ export function Dashboard() {
           }}
           date={selectedDate}
           appointment={selectedAppointment}
+          dependents={dependents}
+          doctors={doctors}
+          specialties={specialties}
+          locations={locations}
           onSave={handleSaveAppointment}
           onDelete={handleDeleteAppointment}
         />

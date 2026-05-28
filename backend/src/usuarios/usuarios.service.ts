@@ -32,6 +32,23 @@ export class UsuariosService {
     });
   }
 
+  buscarMedicos() {
+    return this.repo.find({
+      where: { papel: 'medico', ativo: true, bloqueado: false },
+      select: {
+        id: true,
+        nome: true,
+        cpf: true,
+        email: true,
+        papel: true,
+        ativo: true,
+        bloqueado: true,
+        criadoEm: true,
+      },
+      order: { nome: 'ASC' },
+    });
+  }
+
   async buscarUm(id: string) {
     const usuario = await this.repo.findOne({ where: { id } });
     if (!usuario) throw new NotFoundException('Usuário não encontrado');
