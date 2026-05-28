@@ -7,6 +7,8 @@ import { AutenticacaoModule } from './autenticacao/autenticacao.module.js';
 import { LogsModule } from './logs/logs.module.js';
 import { ConfiguracoesModule } from './configuracoes/configuracoes.module.js';
 import { EspecialidadesModule } from './especialidades/especialidades.module.js';
+import { LocalizacoesModule } from './localizacoes/localizacoes.module.js';
+import { DependentesModule } from './dependentes/dependentes.module.js';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { EspecialidadesModule } from './especialidades/especialidades.module.js'
     LogsModule,
     ConfiguracoesModule,
     EspecialidadesModule,
+    LocalizacoesModule,
+    DependentesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
