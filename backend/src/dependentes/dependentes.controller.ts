@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -12,6 +14,8 @@ import { DependentesService } from './dependentes.service.js';
 import { CriarDependenteDto } from './dto/criar-dependente.dto.js';
 import { AtualizarDependenteDto } from './dto/atualizar-dependente.dto.js';
 import { JwtAutenticacaoGuard } from '../autenticacao/guardas/jwt-autenticacao.guard.js';
+import { PapeisGuard } from '../autenticacao/guardas/papeis.guard.js';
+import { Papeis } from '../autenticacao/decoradores/papeis.decorator.js';
 
 @Controller('dependentes')
 @UseGuards(JwtAutenticacaoGuard)
@@ -19,6 +23,8 @@ export class DependentesController {
   constructor(private readonly dependentesService: DependentesService) {}
 
   @Get()
+  @UseGuards(PapeisGuard)
+  @Papeis('admin')
   buscarTodos() {
     return this.dependentesService.buscarTodos();
   }
@@ -44,6 +50,7 @@ export class DependentesController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   remover(@Param('id') id: string) {
     return this.dependentesService.remover(id);
   }

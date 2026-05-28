@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -52,6 +54,7 @@ export class LocalizacoesController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(PapeisGuard)
   @Papeis('admin')
   remover(@Param('id') id: string) {
