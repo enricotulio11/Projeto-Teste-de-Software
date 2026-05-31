@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.4.2 (Python 3.13.13 on win32)" generated="2026-05-31T17:19:05.459721" rpa="false" schemaversion="5">
+<suite id="s1" name="Testes Arthur Rodrigues" source="F:\Workspace\[School]\medagenda\testes_arthur_rodrigues.robot">
+<test id="s1-t1" name="Dashboard Sem Login Redireciona Para Login" line="5">
+<kw name="Open Browser" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:19:05.717684" level="INFO">Opening browser 'Chrome' to base url 'http://localhost:5173/dashboard'.</msg>
+<arg>http://localhost:5173/dashboard</arg>
+<arg>Chrome</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<status status="PASS" start="2026-05-31T17:19:05.717456" elapsed="0.986621"/>
+</kw>
+<kw name="Wait Until Location Is" owner="SeleniumLibrary">
+<arg>http://localhost:5173/login</arg>
+<doc>Waits until the current URL is ``expected``.</doc>
+<status status="PASS" start="2026-05-31T17:19:06.704433" elapsed="0.014223"/>
+</kw>
+<kw name="Close Browser" owner="SeleniumLibrary">
+<doc>Closes the current browser.</doc>
+<status status="PASS" start="2026-05-31T17:19:06.718943" elapsed="2.115180"/>
+</kw>
+<status status="PASS" start="2026-05-31T17:19:05.716557" elapsed="3.117858"/>
+</test>
+<test id="s1-t2" name="Adicionar Dependente Valido" line="10">
+<kw name="Open Browser" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:19:08.835277" level="INFO">Opening browser 'Chrome' to base url 'http://localhost:5173/login'.</msg>
+<arg>http://localhost:5173/login</arg>
+<arg>Chrome</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<status status="PASS" start="2026-05-31T17:19:08.835124" elapsed="0.855576"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>id=cpf</arg>
+<arg>10s</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2026-05-31T17:19:09.691065" elapsed="0.013563"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:19:09.705148" level="INFO">Typing text '12345678901' into text field 'id=cpf'.</msg>
+<arg>id=cpf</arg>
+<arg>12345678901</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2026-05-31T17:19:09.704904" elapsed="0.079049"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:19:09.784559" level="INFO">Typing text '123456' into text field 'id=password'.</msg>
+<arg>id=password</arg>
+<arg>123456</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2026-05-31T17:19:09.784274" elapsed="0.049885"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:19:09.834658" level="INFO">Clicking button 'xpath=//button[@type='submit']'.</msg>
+<arg>xpath=//button[@type='submit']</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2026-05-31T17:19:09.834451" elapsed="0.053156"/>
+</kw>
+<kw name="Wait Until Location Is" owner="SeleniumLibrary">
+<arg>http://localhost:5173/dashboard</arg>
+<arg>10s</arg>
+<doc>Waits until the current URL is ``expected``.</doc>
+<status status="PASS" start="2026-05-31T17:19:09.887901" elapsed="0.206293"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>xpath=//button[contains(., 'Gerenciar Dependentes')]</arg>
+<arg>10s</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2026-05-31T17:19:10.094571" elapsed="0.010091"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:19:10.105365" level="INFO">Clicking button 'xpath=//button[contains(., 'Gerenciar Dependentes')]'.</msg>
+<arg>xpath=//button[contains(., 'Gerenciar Dependentes')]</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2026-05-31T17:19:10.105041" elapsed="0.050511"/>
+</kw>
+<kw name="Wait Until Location Is" owner="SeleniumLibrary">
+<arg>http://localhost:5173/dependentes</arg>
+<arg>10s</arg>
+<doc>Waits until the current URL is ``expected``.</doc>
+<status status="PASS" start="2026-05-31T17:19:10.155885" elapsed="0.014698"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>xpath=//h1[contains(text(),'Gerenciar Dependentes')]</arg>
+<arg>10s</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2026-05-31T17:19:10.171009" elapsed="0.013806"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:19:10.185326" level="INFO">Clicking button 'xpath=//button[contains(., 'Adicionar Dependente')]'.</msg>
+<arg>xpath=//button[contains(., 'Adicionar Dependente')]</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2026-05-31T17:19:10.185083" elapsed="0.061080"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>id=name</arg>
+<arg>10s</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2026-05-31T17:19:10.246469" elapsed="0.010659"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:19:10.257646" level="INFO">Typing text 'Neymar da Silva' into text field 'id=name'.</msg>
+<arg>id=name</arg>
+<arg>Neymar da Silva</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2026-05-31T17:19:10.257416" elapsed="0.079635"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:19:10.337739" level="INFO">Typing text '15060769046' into text field 'id=cpf'.</msg>
+<arg>id=cpf</arg>
+<arg>15060769046</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2026-05-31T17:19:10.337411" elapsed="0.068093"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:19:10.406024" level="INFO">Typing text '2010-05-15' into text field 'id=dateOfBirth'.</msg>
+<arg>id=dateOfBirth</arg>
+<arg>2010-05-15</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2026-05-31T17:19:10.405793" elapsed="0.052808"/>
+</kw>
+<kw name="Click Element" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:19:10.459197" level="INFO">Clicking element 'xpath=//button[@id='relationship']'.</msg>
+<arg>xpath=//button[@id='relationship']</arg>
+<doc>Click the element identified by ``locator``.</doc>
+<status status="PASS" start="2026-05-31T17:19:10.458912" elapsed="0.041416"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>xpath=//div[@role='option' and contains(., 'Filho')]</arg>
+<arg>10s</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2026-05-31T17:19:10.500657" elapsed="6.572884"/>
+</kw>
+<kw name="Click Element" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:19:17.074106" level="INFO">Clicking element 'xpath=//div[@role='option' and contains(., 'Filho')]'.</msg>
+<arg>xpath=//div[@role='option' and contains(., 'Filho')]</arg>
+<doc>Click the element identified by ``locator``.</doc>
+<status status="PASS" start="2026-05-31T17:19:17.073892" elapsed="0.041072"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:19:17.115529" level="INFO">Clicking button 'xpath=//button[contains(., 'Salvar Perfil')]'.</msg>
+<arg>xpath=//button[contains(., 'Salvar Perfil')]</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2026-05-31T17:19:17.115281" elapsed="0.052430"/>
+</kw>
+<kw name="Wait Until Page Contains" owner="SeleniumLibrary">
+<arg>cadastrado com sucesso</arg>
+<arg>10s</arg>
+<doc>Waits until ``text`` appears on the current page.</doc>
+<status status="PASS" start="2026-05-31T17:19:17.167993" elapsed="0.213480"/>
+</kw>
+<kw name="Wait Until Page Contains" owner="SeleniumLibrary">
+<arg>Neymar da Silva</arg>
+<arg>10s</arg>
+<doc>Waits until ``text`` appears on the current page.</doc>
+<status status="PASS" start="2026-05-31T17:19:17.381744" elapsed="0.007245"/>
+</kw>
+<kw name="Close Browser" owner="SeleniumLibrary">
+<doc>Closes the current browser.</doc>
+<status status="PASS" start="2026-05-31T17:19:17.389315" elapsed="2.132762"/>
+</kw>
+<status status="PASS" start="2026-05-31T17:19:08.834783" elapsed="10.687592"/>
+</test>
+<status status="PASS" start="2026-05-31T17:19:05.460976" elapsed="14.061922"/>
+</suite>
+<statistics>
+<total>
+<stat pass="2" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat name="Testes Arthur Rodrigues" id="s1" pass="2" fail="0" skip="0">Testes Arthur Rodrigues</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>
