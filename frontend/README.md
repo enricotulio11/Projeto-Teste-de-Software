@@ -1,16 +1,34 @@
-# Projeto MedAgenda - Frontend
+# MedAgenda - Frontend
 
-Frontend do projeto MedAgenda, baseado no prototipo exportado do Figma:
-https://www.figma.com/design/dSPPLKCoWerk1EJPxxrcRL/MedAgenda-Mod
+Interface web do projeto MedAgenda — sistema de agendamento de consultas médicas voltado para idosos e seus familiares.
 
-## Execucao local
+## Tecnologias
+
+- React 18 + TypeScript
+- Vite
+- Tailwind CSS v4
+- shadcn/ui (Radix UI)
+- React Router v7
+
+## Execução local
+
+Copie o arquivo de variáveis de ambiente e ajuste conforme necessário:
+
+```bash
+cp .env.example .env
+```
+
+Instale as dependências e inicie o servidor de desenvolvimento:
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Observacao
+A aplicação estará disponível em `http://localhost:5173`.
 
-Nesta versao, os dados de usuarios, dependentes e consultas sao persistidos no
-`localStorage` do navegador. A integracao com a API sera tratada posteriormente.
+## Variáveis de ambiente
+
+| Variável | Descrição | Padrão |
+|---|---|---|
+| `VITE_API_URL` | URL base da API backend | `http://localhost:3000` |
