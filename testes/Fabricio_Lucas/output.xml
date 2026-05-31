@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.4.2 (Python 3.13.13 on win32)" generated="2026-05-31T17:15:07.966282" rpa="false" schemaversion="5">
+<suite id="s1" name="Testes Fabricio" source="F:\Workspace\[School]\medagenda\testes_fabricio.robot">
+<test id="s1-t1" name="Login Valido Redireciona Para Dashboard" line="5">
+<kw name="Open Browser" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:15:08.251141" level="INFO">Opening browser 'Chrome' to base url 'http://localhost:5173/login'.</msg>
+<arg>http://localhost:5173/login</arg>
+<arg>Chrome</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<status status="PASS" start="2026-05-31T17:15:08.250853" elapsed="1.527912"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:15:09.779529" level="INFO">Typing text '12345678901' into text field 'id=cpf'.</msg>
+<arg>id=cpf</arg>
+<arg>12345678901</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2026-05-31T17:15:09.779123" elapsed="0.081468"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:15:09.861154" level="INFO">Typing text '123456' into text field 'id=password'.</msg>
+<arg>id=password</arg>
+<arg>123456</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2026-05-31T17:15:09.860909" elapsed="0.051153"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:15:09.912494" level="INFO">Clicking button 'xpath=//button[@type='submit']'.</msg>
+<arg>xpath=//button[@type='submit']</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2026-05-31T17:15:09.912299" elapsed="0.054726"/>
+</kw>
+<kw name="Wait Until Location Is" owner="SeleniumLibrary">
+<arg>http://localhost:5173/dashboard</arg>
+<doc>Waits until the current URL is ``expected``.</doc>
+<status status="PASS" start="2026-05-31T17:15:09.967295" elapsed="0.206084"/>
+</kw>
+<kw name="Close Browser" owner="SeleniumLibrary">
+<doc>Closes the current browser.</doc>
+<status status="PASS" start="2026-05-31T17:15:10.173609" elapsed="2.117802"/>
+</kw>
+<status status="PASS" start="2026-05-31T17:15:08.249547" elapsed="4.042183"/>
+</test>
+<test id="s1-t2" name="Login Invalido Exibe Mensagem De Erro" line="13">
+<kw name="Open Browser" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:15:12.292784" level="INFO">Opening browser 'Chrome' to base url 'http://localhost:5173/login'.</msg>
+<arg>http://localhost:5173/login</arg>
+<arg>Chrome</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<status status="PASS" start="2026-05-31T17:15:12.292601" elapsed="0.830877"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:15:13.124163" level="INFO">Typing text '12345678901' into text field 'id=cpf'.</msg>
+<arg>id=cpf</arg>
+<arg>12345678901</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2026-05-31T17:15:13.123825" elapsed="0.083327"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:15:13.207654" level="INFO">Typing text 'senhaerrada' into text field 'id=password'.</msg>
+<arg>id=password</arg>
+<arg>senhaerrada</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2026-05-31T17:15:13.207425" elapsed="0.053717"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2026-05-31T17:15:13.261673" level="INFO">Clicking button 'xpath=//button[@type='submit']'.</msg>
+<arg>xpath=//button[@type='submit']</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2026-05-31T17:15:13.261431" elapsed="0.052773"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>xpath=//*[contains(text(),'CPF ou senha incorretos')]</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2026-05-31T17:15:13.314695" elapsed="0.218153"/>
+</kw>
+<kw name="Close Browser" owner="SeleniumLibrary">
+<doc>Closes the current browser.</doc>
+<status status="PASS" start="2026-05-31T17:15:13.533122" elapsed="2.112942"/>
+</kw>
+<status status="PASS" start="2026-05-31T17:15:12.292189" elapsed="3.354150"/>
+</test>
+<status status="PASS" start="2026-05-31T17:15:07.967605" elapsed="7.679215"/>
+</suite>
+<statistics>
+<total>
+<stat pass="2" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat name="Testes Fabricio" id="s1" pass="2" fail="0" skip="0">Testes Fabricio</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>
